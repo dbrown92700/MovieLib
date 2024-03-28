@@ -6,12 +6,15 @@ from movie_sql import DataBase
 if __name__ == '__main__':
 
     db = DataBase(server='127.0.0.1', user=os.getenv('DB_USER'), password=os.getenv('DB_PASS'), database='fred')
-    imdb = Cinemagoer()
-    movie = imdb.search_movie('Clerks')
-    movie_detail = imdb.get_movie(movie[0].movieID)
-    db.insert_movie('filename.mkv', movie_detail)
-    movies = db.movie_list(rating=8.0)
+    if False:
+        imdb = Cinemagoer()
+        for m in ['The Matrix', 'Alien 1979', 'Shawshank Redemption', 'Clerks']:
+            movie = imdb.search_movie(m)
+            movie_detail = imdb.get_movie(movie[0].movieID)
+            db.insert_movie('filename.mkv', movie_detail)
+    movies = db.movie_list(rating=8)
     print(movies)
+    db.close()
 
     if False:
         files = os.listdir('/media/db/Elements/Movies_TV/Movies/Tarantino')

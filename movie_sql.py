@@ -71,7 +71,7 @@ class DataBase:
                   f'"{movie["year"]}", "{movie["rating"]}", "{movie["plot"][0]}", {top250});'
         self.cursor.execute(command)
         self.cnx.commit()
-        self.cursor.execute(f'SELECT movieId FROM movies WHERE file="{file}";')
+        self.cursor.execute(f'SELECT movieId FROM movies WHERE imdb_id="{movie["imdbID"]}";')
         movie_id = self.cursor.fetchall()[0][0]
         for genre in movie['genres']:
             if genre not in self.genre_list:
@@ -94,16 +94,25 @@ class DataBase:
             movie_filter.append(f'rating>{rating}')
         if year > 0:
             movie_filter.append(f'year={year}')
+        if genre:
+            movie_filter.append(f'genre="{genre}"')
 
-        # SELECT * FROM movies
-        # JOIN movie_genres ON(movie_genres.movieId = movies.movieId)
-        # JOIN genres ON(genres.genreId = movie_genres.genreId)
-        # WHERE movies.rating > 7;
-
-        self.cursor.execute(f'SELECT * FROM movies WHERE {" AND ".join(movie_filter)};')
+        self.cursor.execute(f'SELECT * FROM movies '
+                            f'JOIN movie_genres ON(movie_genres.movieId = movies.movieId) '
+                            f'JOIN genres ON(genres.genreId = movie_genres.genreId) '
+                            f'WHERE {" AND ".join(movie_filter)};')
         movies = self.cursor.fetchall()
+        unique_movies = {}
+        for mov in movies:
+            genre = mov[-1]
+            id = mov[3]
+            if id in unique_movies:
+                unique_movies[id][-1].append(mov[-1])
+            else:
+                unique_movies[id] = list(mov[:-1])
+                unique_movies[id].append([genre])
 
-        return movies
+        return list(unique_movies.values())
 
     def movie_genres(self, movie_id):
         # Returns a list of genres for a given movie ID

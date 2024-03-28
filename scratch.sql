@@ -28,10 +28,20 @@ INSERT INTO genres (genre) VALUES ('Drama'), ('Action'), ('War');
 
 INSERT INTO movie_genres (movieId, genreId) VALUES (1,2), (2,2), (3,1), (1,3);
 
-SELECT movies.movieId, movies.name, genres.genreId, genres.genre FROM movies
+SELECT movies.movieId, movies.title, genres.genreId, genres.genre FROM movies
 JOIN movie_genres ON (movie_genres.movieId = movies.movieId)
 JOIN genres ON (genres.genreId = movie_genres.genreId)
 WHERE genres.genre='Action';
+
+
+SELECT movies.title, genres.genre FROM movies
+JOIN movie_genres ON (movie_genres.movieId = movies.movieId)
+JOIN genres ON (genres.genreId = movie_genres.genreId)
+WHERE genres.genre='Sci-Fi';
+
+SELECT movies.title, genres.genre FROM movies
+JOIN movie_genres ON (movie_genres.movieId = movies.movieId)
+JOIN genres ON (genres.genreId = movie_genres.genreId);
 
 SELECT genres.genre
 FROM movies
