@@ -33,11 +33,11 @@ class DataBase:
             self.cursor.execute(f'USE {database};')
         except mysql.connector.Error:
             self.cursor.execute(f'CREATE DATABASE {database};')
+            self.cursor.execute(f'USE {database};')
             self.cursor.execute(f'CREATE TABLE movies {movie_table};')
             self.cursor.execute(f'CREATE TABLE genres {genre_table};')
             self.cursor.execute(f'CREATE TABLE movie_genres {movie_genres};')
-            self.cursor.execute('USE movie_db')
-        self.cursor.execute(f'SELECT * FROM genres')
+        self.cursor.execute(f'SELECT * FROM genres;')
         genres = self.cursor.fetchall()
         self.genre_list = {}
         for g in genres:
@@ -46,14 +46,16 @@ class DataBase:
     def close(self):
         self.cnx.close()
 
-    def create_table(self, table: str):
-
-        self.cursor.execute(f'CREATE TABLE {table}')
+    # def create_table(self, table: str):
+    #
+    #     self.cursor.execute(f'CREATE TABLE {table};')
 
     def add_genre(self, genre):
 
-        self.cursor.execute(f'INSERT INTO genres (genre) VALUES ({genre})')
-        genre_id = self.cursor.execute(f'SELECT genreId FROM genres WHERE genre="{genre}"')
+        self.cursor.execute(f'INSERT INTO genres (genre) VALUES ("{genre}");')
+        self.cnx.commit()
+        self.cursor.execute(f'SELECT genreId FROM genres WHERE genre="{genre}";')
+        genre_id = self.cursor.fetchall()[0][0]
         self.genre_list[genre] = genre_id
 
         return genre_id
@@ -61,14 +63,15 @@ class DataBase:
     def insert_movie(self, file, movie):
 
         try:
-            top250 = f" {movie['top 250 rank']}"
+            top250 = movie['top 250 rank']
         except KeyError:
-            top250 = Null
-        self.cursor.execute(f'INSERT INTO movies '
-                            f'(file, title, imdb_id, year, rating, plot) '
-                            f'VALUES ({file}, {movie["title"]}, {movie["imdbID"]}, {movie["year"]}, {movie["rating"]}, '
-                            f'{movie["plot"][0]});')
-        self.cursor.execute(f'SELECT movieId FROM movies WHERE file="{file}"')
+            top250 = 999
+        command = f'INSERT INTO movies (file, title, imdb_id, year, rating, plot, top250rank) ' \
+                  f'VALUES ("{file}", "{movie["title"]}", "{movie["imdbID"]}", ' \
+                  f'"{movie["year"]}", "{movie["rating"]}", "{movie["plot"][0]}", {top250});'
+        self.cursor.execute(command)
+        self.cnx.commit()
+        self.cursor.execute(f'SELECT movieId FROM movies WHERE file="{file}";')
         movie_id = self.cursor.fetchall()[0][0]
         for genre in movie['genres']:
             if genre not in self.genre_list:
@@ -76,34 +79,31 @@ class DataBase:
             self.cursor.execute(f'INSERT INTO movie_genres '
                                 f'(movieId, genreId)'
                                 f'VALUES ({movie_id}, {self.genre_list[genre]});')
+            self.cnx.commit()
 
         return movie_id
 
-    def movie_list(self, name: str, genre: str, rating: float, year: int, page: int, page_size: int):
+    def movie_list(self, name='', genre='', rating=-1.1, year=0):
         # Returns a list of movies using the filters specified
         movies = []
         count = 1
         movie_filter = []
         if name:
-            movie_filter.append(f'title LIKE "%{title}%"')
-        if rating:
+            movie_filter.append(f'title LIKE "%{name}%"')
+        if rating > 0:
             movie_filter.append(f'rating>{rating}')
-        if year:
+        if year > 0:
             movie_filter.append(f'year={year}')
-
 
         # SELECT * FROM movies
         # JOIN movie_genres ON(movie_genres.movieId = movies.movieId)
         # JOIN genres ON(genres.genreId = movie_genres.genreId)
         # WHERE movies.rating > 7;
 
-        count = self.cursor.execute(f'SELECT COUNT(*) FROM movies WHERE {" AND ".join(movie_filter)};')
-        if page:
-            count = f'LIMIT {page_size} OFFSET {(page - 1)*page_size}'
+        self.cursor.execute(f'SELECT * FROM movies WHERE {" AND ".join(movie_filter)};')
+        movies = self.cursor.fetchall()
 
-        self.cursor.execute('')
-
-        return movies, count
+        return movies
 
     def movie_genres(self, movie_id):
         # Returns a list of genres for a given movie ID

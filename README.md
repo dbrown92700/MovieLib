@@ -1,6 +1,6 @@
 # Install
 
-- Install mysql
+- Install mysql. 
 > sudo apt install mysql-server
 - Create a local user
 > sudo mysql \
