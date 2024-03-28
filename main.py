@@ -1,6 +1,5 @@
 #!python
 import os
-from imdb import Cinemagoer
 from movie_sql import DataBase
 
 if __name__ == '__main__':

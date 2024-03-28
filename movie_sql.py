@@ -65,7 +65,7 @@ class DataBase:
         try:
             top250 = movie['top 250 rank']
         except KeyError:
-            top250 = 999
+            top250 = 'Null'
         command = f'INSERT INTO movies (file, title, imdb_id, year, rating, plot, top250rank) ' \
                   f'VALUES ("{file}", "{movie["title"]}", "{movie["imdbID"]}", ' \
                   f'"{movie["year"]}", "{movie["rating"]}", "{movie["plot"][0]}", {top250});'
@@ -83,16 +83,14 @@ class DataBase:
 
         return movie_id
 
-    def movie_list(self, name='', genre='', rating=-1.1, year=0):
+    def movie_list(self, name='', genre='', rating=0.0, year=0):
         # Returns a list of movies using the filters specified
-        movies = []
-        count = 1
         movie_filter = []
         if name:
             movie_filter.append(f'title LIKE "%{name}%"')
-        if rating > 0:
+        if rating:
             movie_filter.append(f'rating>{rating}')
-        if year > 0:
+        if year:
             movie_filter.append(f'year={year}')
         if genre:
             movie_filter.append(f'genre="{genre}"')
@@ -105,12 +103,12 @@ class DataBase:
         unique_movies = {}
         for mov in movies:
             genre = mov[-1]
-            id = mov[3]
-            if id in unique_movies:
-                unique_movies[id][-1].append(mov[-1])
+            movie_id = mov[3]
+            if movie_id in unique_movies:
+                unique_movies[movie_id][-1].append(mov[-1])
             else:
-                unique_movies[id] = list(mov[:-1])
-                unique_movies[id].append([genre])
+                unique_movies[movie_id] = list(mov[:-1])
+                unique_movies[movie_id].append([genre])
 
         return list(unique_movies.values())
 
