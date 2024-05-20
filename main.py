@@ -1,17 +1,16 @@
-#!python
+#!python3
+
 import os
 from imdb import Cinemagoer
 from movie_sql import DataBase
+from movie import Movie
 
 if __name__ == '__main__':
 
-    db = DataBase(server='127.0.0.1', user=os.getenv('DB_USER'), password=os.getenv('DB_PASS'), database='fred')
-    imdb = Cinemagoer()
-    movie = imdb.search_movie('Clerks')
-    movie_detail = imdb.get_movie(movie[0].movieID)
-    db.insert_movie('filename.mkv', movie_detail)
-    movies = db.movie_list(rating=8.0)
-    print(movies)
+    db = DataBase(server='127.0.0.1', user=os.getenv('DB_USER'), password=os.getenv('DB_PASS'), database='fred2')
+    movie = Movie('The Matrix 1999.mkv', '/my/directory')
+    movie.get_imdb()
+    db.insert_movie(movie)
 
     if False:
         files = os.listdir('/media/db/Elements/Movies_TV/Movies/Tarantino')
