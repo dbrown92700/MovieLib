@@ -1,11 +1,12 @@
 import os
+import logging
+logger = logging.getLogger(__name__)
 
 """
 - Create directory listing from db
 - Read directories and compare to previous list
 - Lookup new files and add to database
 """
-
 
 class Files:
 
