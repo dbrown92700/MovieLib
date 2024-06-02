@@ -46,7 +46,13 @@ class DataBase:
             logger.info(f'Created table genres')
             self.cursor.execute(f'CREATE TABLE movie_genres {movie_genres};')
             logger.info(f'Created table movie_genres')
+            self.cursor.execute(f'CREATE TABLE none_watched (movieID nchar(20) not NULL);')
+            self.cursor.execute(f'CREATE TABLE none_wants (movieID nchar(20) not NULL);')
+            self.cursor.execute(f'CREATE TABLE users (user nchar(32) not NULL);')
+            self.cursor.execute(f'INSERT INTO users (user) VALUES ("none");')
+            logger.info(f'Created tables users, none_watched and none_wants')
         self.cursor.execute(f'SELECT * FROM genres;')
+        self.user = 'none'
         genres = self.cursor.fetchall()
         self.genre_dict = {}
         for g in genres:
@@ -55,7 +61,8 @@ class DataBase:
     def close(self):
         self.cnx.close()
 
-    def add_genre(self, genre):
+    def add_genre(self, genre) -> int:
+        # adds a new genre to the genre table and returns its integer ID
 
         self.cursor.execute(f'INSERT INTO genres (genre) VALUES ("{genre}");')
         self.cnx.commit()
@@ -66,6 +73,7 @@ class DataBase:
         return genre_id
 
     def insert_movie(self, movie: Movie):
+        # inserts a movie into the database
 
         movie_search = self.movie_list(imdb_id=movie.imdb_id)[0]
         if movie_search:
@@ -91,8 +99,10 @@ class DataBase:
         logger.info(f'Added to database: {movie.filename} : {movie.imdb_data["title"]}')
 
     def movie_list(self, imdb_id='', name='', genre='', rating=-1.1, year=0, top250=False, page=1, pagesize=10,
-                   sort='title', direction='ASC'):
-        # Returns a list of movies using the filters specified
+                   sort='title', direction='ASC', watched='', wants=''):
+        # Returns a list of movies using the filters specified and the count of movies in the form
+        # ([(movie1),(movie2)], count)
+
         movie_filter = []
         if imdb_id:
             movie_filter.append(f'movies.movieId="{imdb_id}"')
@@ -106,19 +116,29 @@ class DataBase:
             movie_filter.append(f'movies.top250rank<300')
         if genre:
             movie_filter.append(f'genre="{genre}"')
+        if watched:
+            movie_filter.append(f'movieID {"NOT " if watched=="no" else ""}IN (SELECT * FROM {self.user}_watched)')
+        if wants:
+            movie_filter.append(f'movieID {"NOT " if wants=="no" else ""}IN (SELECT * FROM {self.user}_wants)')
+        filter_text = ''
+        if movie_filter:
+            filter_text = f'WHERE {" AND ".join(movie_filter)}'
 
+        join_text = ''
         if genre:
-            command = (f' FROM movies '
-                       f'JOIN movie_genres ON(movie_genres.movieId = movies.movieId) '
-                       f'JOIN genres ON(genres.genreId = movie_genres.genreId) '
-                       f'WHERE {" AND ".join(movie_filter)}')
-        elif movie_filter:
-            command = f' FROM movies WHERE {" AND ".join(movie_filter)}'
-        else:
-            command = ' FROM movies'
-        self.cursor.execute(f'SELECT * {command} ORDER BY {sort} {direction} LIMIT {pagesize} OFFSET {(page-1) * pagesize};')
+            join_text = (f'JOIN movie_genres ON (movie_genres.movieId = movies.movieId) '
+                         f'JOIN genres ON (genres.genreId = movie_genres.genreId) ')
+        command = (f'SELECT movies.* FROM movies '
+                   f'{join_text} '
+                   f'{filter_text} '
+                   f'ORDER BY {sort} {direction} '
+                   f'LIMIT {pagesize} OFFSET {(page-1) * pagesize};')
+        print(command)
+        self.cursor.execute(command)
         movies = self.cursor.fetchall()
-        self.cursor.execute('SELECT COUNT(*)' + command)
+        self.cursor.execute(f'SELECT COUNT(*) FROM movies '
+                            f'{join_text} '
+                            f'{filter_text};')
         movie_count = self.cursor.fetchall()[0][0]
 
         return movies, movie_count
@@ -135,7 +155,8 @@ class DataBase:
 
         return genre_list
 
-    def files(self):
+    def files(self) -> dict:
+        # returns a dictionary in the format {directory1: [filename1, filename2], directory2: etc}
 
         files = {}
         self.cursor.execute(f'SELECT * FROM movies;')
@@ -148,6 +169,8 @@ class DataBase:
         return files
 
     def db_to_dict(self, movie_list: list) -> list:
+        # converts a database list of movies to a dictionary list of movies
+
         dict_list = []
         for movie in movie_list:
             movie_dict = {
@@ -165,3 +188,43 @@ class DataBase:
             dict_list.append(movie_dict)
 
         return dict_list
+
+    def add_user(self, username: str) -> bool:
+
+        users = self.user_list()
+        if username in users:
+            return False
+        watch_table = f'CREATE TABLE {username}_watched (movieID nchar(20) not NULL);'
+        wants_table = f'CREATE TABLE {username}_wants (movieID nchar(20) not NULL);'
+        self.cursor.execute(watch_table)
+        logger.info(f'Created table {username}_watched')
+        self.cursor.execute(wants_table)
+        logger.info(f'Created table {username}_wants')
+        self.user = username
+        self.cursor.execute(f'INSERT INTO users (user) VALUES ("{username}");')
+
+        return True
+
+    def user_list(self) -> list:
+        self.cursor.execute(f'SELECT * FROM users;')
+        results = self.cursor.fetchall()
+
+        return [x[0] for x in results]
+
+    def select_user(self, username: str) -> bool:
+        # changes the database user to username. returns False if user does not exist
+
+        if username not in self.user_list():
+            return False
+        self.user = username
+        return True
+
+    def toggle_list_entry(self, imdb_id: str, movie_list='wants'):
+
+        command = f'SELECT * FROM {self.user}_{movie_list} WHERE movieID="{imdb_id}";'
+        self.cursor.execute(command)
+        if self.cursor.fetchall():
+            command = f'DELETE FROM {self.user}_{movie_list} WHERE movieID="{imdb_id}";'
+        else:
+            command = f'INSERT INTO {self.user}_{movie_list} (movieID) VALUES ("{imdb_id}");'
+        self.cursor.execute(command)

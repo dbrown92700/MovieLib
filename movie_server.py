@@ -11,11 +11,6 @@ import os
 from datetime import datetime
 from movie_sql import DataBase
 
-db = DataBase(server='0.0.0.0',
-              user=os.getenv('DB_USER'),
-              password=os.getenv('DB_PASS'),
-              database=os.getenv('MOVIE_DB'))
-
 app = Flask(__name__)
 app.secret_key = 'any random string'
 app_url = os.environ.get('SCRIPT_NAME') or ''
@@ -24,11 +19,19 @@ server_port = os.environ.get('SERVER_PORT') or '8111'
 
 root_dir = '/media/db/Elements/Movies_TV/New Movies'
 
+
+def database():
+    db = DataBase(server='0.0.0.0',
+                  user=os.getenv('DB_USER'),
+                  password=os.getenv('DB_PASS'),
+                  database=os.getenv('MOVIE_DB'))
+    return db
+
+
 @app.route('/')
 def list_movies():
 
-    global db
-
+    db = database()
     genre = request.args.get('genre') or ''
     name = request.args.get('name') or ''
     page = int(request.args.get('page') or '1')
@@ -56,8 +59,8 @@ def list_movies():
                         f'</div></td>\n'
                         f'<td width=90 align=left><img src="{movie["coverUrl"]}" height=120 width=80></td>\n'
                         f'<td width=30>{movie["rating"]}</td>\n'
-                        f'<td width=300>\n'
-                        f'<div style="height:120px;width:300px;overflow:auto;">'
+                        f'<td width=300 style="padding-right: 5px">\n'
+                        f'<div style="height:120px;width:290px;overflow:auto;">'
                         f'{movie["plot"]}</td>\n<td width=120>')
         for g in movie["genres"]:
             movie_table += f'{g}<br>\n'
@@ -107,9 +110,22 @@ def list_movies():
     else:
         pages += '>>>next</td>\n'
 
+    db.close()
     return render_template('list_movies.html', genre_menu=Markup(genre_menu), watched_radio=Markup(watched_radio),
                            available_radio=Markup(available_radio), name=' '.join(name), pages=Markup(pages),
                            movie_table=Markup(movie_table), app_url=app_url, top250_radio=Markup(top250_radio))
+
+
+@app.route('/toggle')
+def toggle():
+    db = database()
+    user = request.args.get('user')
+    imdb_id = request.args.get('imdbId')
+    db_list = request.args.get('db_list')
+    db.user = user
+    db.toggle_list_entry(imdb_id=imdb_id, movie_list=db_list)
+
+    return Markup('ok')
 
 
 # @app.route('/search')
@@ -134,7 +150,7 @@ def list_movies():
 #         movie_table += f'<tr>\n \
 #                 <td width=200><a href="https://imdb.com/title/{result["id"]}/" target="_imdb">{result["title"]}<br> \
 #                 {result["description"]}</a></td>\n \
-#                 <td width=100 align=left><img src="{result["image"]}" height=120 width=80></td>\n \
+#                 <td width=100 align=left><static src="{result["image"]}" height=120 width=80></td>\n \
 #                 <td width=50><a href="{app_url}/add?id={result["id"]}">Add</a></td>\n'
 #
 #     return render_template('search_result.html', expression=expression, movie_table=Markup(movie_table),
@@ -189,7 +205,7 @@ def list_movies():
 #     movie_table = f'<tr>\n' \
 #                   f'<td width=200><a href="https://imdb.com/title/{movie["id"]}/" target="_imdb">' \
 #                   f'{movie["title"].replace("~^",",")}</a></td>\n' \
-#                   f'<td width=90 align=left><img src="{movie["image"]}" height=120 width=80></td>\n' \
+#                   f'<td width=90 align=left><static src="{movie["image"]}" height=120 width=80></td>\n' \
 #                   f'<td width=30>{movie["rating"]}</td>\n' \
 #                   f'<td width=300 style="border: 1px solid black;">\n' \
 #                   f'<div style="height:120px;width:300px;overflow:auto;">{movie["plot"].replace("~^", ",")}</td>\n' \

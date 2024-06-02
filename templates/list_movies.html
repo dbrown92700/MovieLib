@@ -5,11 +5,12 @@
     <meta charset="UTF-8">
     <title>MovieDB</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="apple-touch-icon" sizes="58x58" href="/img/favicon58.png" />
-    <link rel="apple-touch-icon" sizes="120x120" href="/img/favicon120.png" />
-    <link rel="apple-touch-icon" sizes="152x152" href="/img/favicon152.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon180.png" />
-    <link REL="SHORTCUT ICON" href="/img/favicon.png">
+    <link rel="apple-touch-icon" sizes="58x58" href="/static/favicon58.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/static/favicon120.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/static/favicon152.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/favicon180.png" />
+    <link REL="SHORTCUT ICON" href="/static/favicon.png">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 <body>
 <br>
@@ -23,8 +24,23 @@ function resetRadio(id) {
    var ele = document.getElementsByName(id);
    for(var i=0;i<ele.length;i++)
       ele[i].checked = false;
-      }
+}
+
+function toggle(imdb_id, db_list) {
+    console.log(imdb_id + ' ' + db_list);
+    var img = document.getElementById(imdb_id + db_list).src;
+    if (img.indexOf('yes.png')!=-1) {
+        document.getElementById(imdb_id + db_list).src  = '/static/no.png';
+        $.get('/toggle?user=none&imdbId=' + imdb_id + '&db_list=' + db_list);
+    }
+    else {
+        document.getElementById(imdb_id + db_list).src = '/static/yes.png';
+        $.get('/toggle?user=none&imdbId=' + imdb_id + '&db_list=' + db_list);
+    }
+}
 </script>
+WANTS: <img src="/static/yes.png" id="12345wants" onclick="toggle(12345, 'wants')"><br>
+WATCHED: <img src="/static/yes.png" id="12345watched" onclick="toggle(12345, 'watched')"><br>
 
 <form target="/">
     <table>
@@ -69,7 +85,7 @@ function resetRadio(id) {
             <td>
             <table>
                 <tr>
-                    <td>
+                    <td width="300">
                         Sort by:<br>
                         <select name="sort" id="sort">
                             <option value="title" selected="">Title</option>
@@ -97,10 +113,12 @@ function resetRadio(id) {
                         </script>
                     </td>
                 </tr>
-            </table>
-            </td>
-            <td width="200" align="right">
+                            <td width="200" align="center">
+                                <br><br>
                 <a href="{{app_url}}/search">Add a new movie</a>
+            </td>
+                <tr></tr>
+            </table>
             </td>
         </tr>
     </table>
@@ -111,10 +129,14 @@ function resetRadio(id) {
         {{pages}}
     </tr>
 </table>
-<br>
 <table style="border-collapse: collapse;">
-    <tr><td colspan="5" style="border-bottom: 2px solid black;"></td></tr>
+    <tr><td colspan="5" style="height: 0px; border-bottom: 2px solid black;"></td></tr>
     {{movie_table}}
+</table>
+<table>
+    <tr>
+        {{pages}}
+    </tr>
 </table>
 </body>
 </html>
