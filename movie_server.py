@@ -72,10 +72,10 @@ def list_movies():
         watched = db.user_movie_list(movie_list='watched')
         wants = db.user_movie_list(movie_list='wants')
         movie_table += f'<br>Watch: <img src="/static/{"yes" if movie["imdb_id"] in wants else "no"}.png" ' \
-                       f'id="{movie["imdb_id"]}wants" onclick="toggle("{movie["imdb_id"]}", "wants")" ' \
+                       f'id="{movie["imdb_id"]}wants" onclick="toggle({movie["imdb_id"]}, wants)" ' \
                        f'width="20" height="20">' \
                        f'<br>Watched: <img src="/static/{"yes" if movie["imdb_id"] in watched else "no"}.png" ' \
-                       f'id="{movie["imdb_id"]}watched" onclick="toggle("{movie["imdb_id"]}", "watched")" ' \
+                       f'id="{movie["imdb_id"]}watched" onclick="toggle({movie["imdb_id"]}, watched)" ' \
                        f'width="20" height="20">' \
                        f'</td></tr>\n'
         movie_table += (f'<tr><td style="border-bottom: 2px solid black;"></td>'
