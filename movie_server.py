@@ -4,7 +4,7 @@ __author__ = "David Brown <dbrown92700@gmail.com>"
 __contributors__ = []
 
 import requests
-from flask import Flask, request, render_template, redirect
+from flask import Flask, request, render_template, redirect, session
 from markupsafe import Markup
 import json
 import os
@@ -43,6 +43,9 @@ def list_movies():
     pagesize = int(request.args.get('pagesize') or '10')
     sort = request.args.get('sort') or 'title'
     direction = request.args.get('direction') or 'ASC'
+
+    db.user = session['user'] or 'none'
+    session['user'] = db.user
 
     movies, movie_count = db.movie_list(name=name, genre=genre, pagesize=pagesize, page=page,
                                         rating=rating, year=year, top250=top250, sort=sort, direction=direction)
@@ -127,6 +130,19 @@ def toggle():
 
     return Markup('ok')
 
+
+@app.route('/user')
+def set_user():
+    db = database()
+    user = request.args.get('user')
+    session['user'] = user
+    if user in db.user_list():
+        result = 'Existing user selected.'
+    else:
+        db.add_user(user)
+        result = 'New user created.'
+
+    return Markup(result)
 
 # @app.route('/search')
 # def search():
