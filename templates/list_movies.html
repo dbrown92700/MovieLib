@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=700">
+    <meta charset="UTF-8">
+    <title>MovieDB</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" sizes="58x58" href="/static/favicon58.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/static/favicon120.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/static/favicon152.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/favicon180.png" />
+    <link REL="SHORTCUT ICON" href="/static/favicon.png">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+<br>
+
+<script type="text/javascript">
+function resetInput(id) {
+   document.getElementById(id).value="";
+}
+
+function resetRadio(id) {
+   var ele = document.getElementsByName(id);
+   for(var i=0;i<ele.length;i++)
+      ele[i].checked = false;
+}
+
+function toggle(imdb_id, db_list) {
+    console.log(imdb_id + ' ' + db_list);
+    var img = document.getElementById(imdb_id + db_list).src;
+    if (img.indexOf('yes.png')!=-1) {
+        document.getElementById(imdb_id + db_list).src  = '/static/no.png';
+        $.get('/toggle?user=none&imdbId=' + imdb_id + '&db_list=' + db_list);
+    }
+    else {
+        document.getElementById(imdb_id + db_list).src = '/static/yes.png';
+        $.get('/toggle?user=none&imdbId=' + imdb_id + '&db_list=' + db_list);
+    }
+}
+</script>
+WANTS: <img src="/static/yes.png" id="12345wants" onclick="toggle(12345, 'wants')"><br>
+WATCHED: <img src="/static/yes.png" id="12345watched" onclick="toggle(12345, 'watched')"><br>
+
+<form target="/">
+    <table>
+        <tr>
+            <td>
+            <table>
+                <tr><td>Search by name:</td><td colspan="3"><input type="text" name="name" id="name"></td></tr>
+                <tr><td>Search by genre:</td>
+                    <td colspan="3">
+                        <select name="genre" id="genre">
+                            <option value="">None</option>
+                            {{genre_menu}}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Minimum Rating:</td>
+                    <td><input type="text" name="rating" id="rating"></td>
+                </tr>
+                <tr>
+                    <td>Watched:</td>
+                    {{watched_radio}}
+                    <td><input type="button" id="watch_reset" onclick="resetRadio('watched')" value="reset"></td>
+                </tr>
+                <tr>
+                    <td>Available:</td>
+                    {{available_radio}}
+                    <td><input type="button" id="avail_reset" onclick="resetRadio('available')" value="reset"></td>
+                </tr>
+                <tr>
+                    <td>IMDB Top 250:</td>
+                    {{top250_radio}}
+                    <td></td>
+                    <td><input type="button" id="top250_reset" onclick="resetRadio('top250')" value="reset"></td>
+                </tr>
+                <tr>
+                    <td><input type="submit"></td>
+                    <td colspan="3"><a href="{{app_url}}/">Show All Movies</a></td>
+                </tr>
+            </table>
+            <td width="20"></td>
+            <td>
+            <table>
+                <tr>
+                    <td width="300">
+                        Sort by:<br>
+                        <select name="sort" id="sort">
+                            <option value="title" selected="">Title</option>
+                            <option value="rating">IMDB Rating</option>
+                            <option value="year">Year</option>
+                        </select>
+                        <select name="direction" id="direction">
+                            <option value="ASC">Ascending</option>
+                            <option value="DESC">Decending</option>
+                        </select>
+                        <script type="text/javascript">
+                            // Persist search parameters
+                            const queryString = window.location.search;
+                            const urlParams = new URLSearchParams(queryString);
+                            const entries = urlParams.entries();
+                            var elements = ['sort', 'direction', 'name', 'rating'];
+                            for(const entry of entries) {
+                              for (var x=0; x<elements.length; x++) {
+                                if (entry[0] == elements[x]) {
+                                  var element = document.getElementById(elements[x]);
+                                  element.value = entry[1];
+                                }
+                              }
+                            }
+                        </script>
+                    </td>
+                </tr>
+                            <td width="200" align="center">
+                                <br><br>
+                <a href="{{app_url}}/search">Add a new movie</a>
+            </td>
+                <tr></tr>
+            </table>
+            </td>
+        </tr>
+    </table>
+</form>
+<br>
+<table>
+    <tr>
+        {{pages}}
+    </tr>
+</table>
+<table style="border-collapse: collapse;">
+    <tr><td colspan="5" style="height: 0px; border-bottom: 2px solid black;"></td></tr>
+    {{movie_table}}
+</table>
+<table>
+    <tr>
+        {{pages}}
+    </tr>
+</table>
+</body>
+</html>

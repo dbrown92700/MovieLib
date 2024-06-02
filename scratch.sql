@@ -56,11 +56,12 @@ DESCRIBE movies;
 
 UPDATE movies SET rating=7.5 WHERE name='Rambo';
 
-SELECT movies.name
+SELECT movies.title
 FROM movies
 JOIN movie_genres ON (movie_genres.movieId = movies.movieId)
 JOIN genres ON (genres.genreId = movie_genres.genreId)
-WHERE genres.genre='Action' AND movies.rating>7;
+WHERE movies.movieID in (SELECT * FROM dave) AND
+genres.genre='Action' AND movies.rating>7;
 
 SELECT * FROM genres ORDER BY genre LIMIT 2 OFFSET 1;
 
@@ -72,3 +73,6 @@ FROM movies
 JOIN movie_genres ON (movie_genres.movieId = movies.movieId)
 JOIN genres ON (genres.genreId = movie_genres.genreId)
 WHERE movies.rating>7;
+
+
+movies WHERE movieID NOT IN (SELECT * FROM dave_watched) and WHERE movieID NOT IN (SELECT * FROM dave_wants)
