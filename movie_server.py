@@ -67,7 +67,13 @@ def list_movies():
                         f'{movie["plot"]}</td>\n<td width=120>')
         for g in movie["genres"]:
             movie_table += f'{g}<br>\n'
-        movie_table += f'<br>Watched: {"NA"}<br>Available: {"NA"}</td></tr>\n'
+        watched = db.user_movie_list(movie_list='watched')
+        wants = db.user_movie_list(movie_list='wants')
+        movie_table += f'<br>Watch: <img src="/static/{"yes" if movie.imdb_id in wants else "no"}.png" ' \
+                       f'id="{movie.imdb_id}wants" onclick="toggle("{movie.imdb_id}", "wants")">' \
+                       f'<br>Watched: <img src="/static/{"yes" if movie.imdb_id in watched else "no"}.png" ' \
+                       f'id="{movie.imdb_id}watched" onclick="toggle("{movie.imdb_id}", "watched")">' \
+                       f'</td></tr>\n'
         movie_table += (f'<tr><td style="border-bottom: 2px solid black;"></td>'
                         f'<td colspan="4" style="border-bottom: 2px solid black;">'
                         f'{movie["directoryId"].removeprefix(root_dir)}/{movie["file"]}</td></tr>\n')

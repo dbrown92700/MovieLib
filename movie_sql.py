@@ -228,3 +228,10 @@ class DataBase:
         else:
             command = f'INSERT INTO {self.user}_{movie_list} (movieID) VALUES ("{imdb_id}");'
         self.cursor.execute(command)
+
+    def user_movie_list(self, movie_list='wants'):
+        self.cursor.execute(f'SELECT * FROM {self.user}_{movie_list};')
+        movies = self.cursor.fetchall()
+
+        return [m[0] for m in movies]
+
