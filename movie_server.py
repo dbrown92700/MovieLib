@@ -44,8 +44,10 @@ def list_movies():
     sort = request.args.get('sort') or 'title'
     direction = request.args.get('direction') or 'ASC'
 
-    db.user = session['user'] or 'none'
-    session['user'] = db.user
+    try:
+        db.user = session['user']
+    except KeyError:
+        session['user'] = db.user = 'none'
 
     movies, movie_count = db.movie_list(name=name, genre=genre, pagesize=pagesize, page=page,
                                         rating=rating, year=year, top250=top250, sort=sort, direction=direction)
