@@ -112,7 +112,7 @@ function set_user() {
                 <tr>
                     <td width="300">
                         User:
-                        <select name="user" id="user" onChange="javascript:set_user();">
+                        <select name="user" id="user">
                             {{user_list}}
                         </select>
                     </td>
@@ -134,7 +134,7 @@ function set_user() {
                             const queryString = window.location.search;
                             const urlParams = new URLSearchParams(queryString);
                             const entries = urlParams.entries();
-                            var elements = ['sort', 'direction', 'name', 'rating', 'wants', 'watched', 'available'];
+                            var elements = ['sort', 'direction', 'name', 'rating', 'wants', 'watched', 'available', 'user'];
                             for(const entry of entries) {
                               for (var x=0; x<elements.length; x++) {
                                 if (entry[0] == elements[x]) {
@@ -143,9 +143,9 @@ function set_user() {
                                 }
                               }
                             }
-                            var user = sessionStorage.getItem('user');
-                            console.log(user);
-                            document.getElementById('user').value = sessionStorage.getItem('user');
+<!--                            var user = sessionStorage.getItem('user');-->
+<!--                            console.log(user);-->
+<!--                            document.getElementById('user').value = sessionStorage.getItem('user');-->
                         </script>
                     </td>
                 </tr>
