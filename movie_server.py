@@ -105,20 +105,20 @@ def list_movies():
             selected = ' selected'
         genre_menu += f'<option value="{genre_item}"{selected}>{genre_item}</option>\n'
 
-    watched_radio = ''
-    for choice in ['yes', 'no']:
-        selected = ''
-        if choice == watched:
-            selected = 'checked'
-        watched_radio += f'<td>{choice.title()} <input type="radio" name="watched" value="{choice}" {selected}></td>'
-
-    available_radio = ''
-    for choice in ['yes', 'no']:
-        selected = ''
-        if choice == available:
-            selected = 'checked'
-        available_radio += f'<td>{choice.title()} <input type="radio" name="available" ' \
-                           f'value="{choice}" {selected}></td>'
+    # watched_radio = ''
+    # for choice in ['yes', 'no']:
+    #     selected = ''
+    #     if choice == watched:
+    #         selected = 'checked'
+    #     watched_radio += f'<td>{choice.title()} <input type="radio" name="watched" value="{choice}" {selected}></td>'
+    #
+    # available_radio = ''
+    # for choice in ['yes', 'no']:
+    #     selected = ''
+    #     if choice == available:
+    #         selected = 'checked'
+    #     available_radio += f'<td>{choice.title()} <input type="radio" name="available" ' \
+    #                        f'value="{choice}" {selected}></td>'
 
     top250_radio = f'<input type="radio" name="top250" value="True" {"checked" if top250=="True" else ""}>'
 
