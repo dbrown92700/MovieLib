@@ -74,18 +74,17 @@ def list_movies():
             movie_table += f'{g}<br>\n'
         watched = db.user_movie_list(movie_list='watched')
         wants = db.user_movie_list(movie_list='wants')
-        if db.user == 'none':
-            print('do something here')
-        movie_table += f'<table>' \
-                       f'<tr valign="middle"><td align="right">Watch:</td><td>' \
-                       f'<img src="/static/{"yes" if movie["imdb_id"] in wants else "no"}.png" ' \
-                       f'id="{movie["imdb_id"]}wants" onclick="toggle(\'{movie["imdb_id"]}\', \'wants\')" ' \
-                       f'width="20" height="20"></td></tr>' \
-                       f'<tr valign="middle"><td align="right">Watched:</td><td>' \
-                       f'<img src="/static/{"yes" if movie["imdb_id"] in watched else "no"}.png" ' \
-                       f'id="{movie["imdb_id"]}watched" onclick="toggle(\'{movie["imdb_id"]}\', \'watched\')" ' \
-                       f'width="20" height="20"></td></tr></table>' \
-                       f'</td></tr>\n'
+        if db.user != 'none':
+            movie_table += f'<table>' \
+                           f'<tr valign="middle"><td align="right">Watch:</td><td>' \
+                           f'<img src="/static/{"yes" if movie["imdb_id"] in wants else "no"}.png" ' \
+                           f'id="{movie["imdb_id"]}wants" onclick="toggle(\'{movie["imdb_id"]}\', \'wants\')" ' \
+                           f'width="20" height="20"></td></tr>' \
+                           f'<tr valign="middle"><td align="right">Watched:</td><td>' \
+                           f'<img src="/static/{"yes" if movie["imdb_id"] in watched else "no"}.png" ' \
+                           f'id="{movie["imdb_id"]}watched" onclick="toggle(\'{movie["imdb_id"]}\', \'watched\')" ' \
+                           f'width="20" height="20"></td></tr></table>' \
+                           f'</td></tr>\n'
         movie_table += (f'<tr><td style="border-bottom: 2px solid black;"></td>'
                         f'<td colspan="4" style="border-bottom: 2px solid black;">'
                         f'{movie["directoryId"].removeprefix(root_dir)}/{movie["file"]}</td></tr>\n')
