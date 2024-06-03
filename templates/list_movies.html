@@ -108,7 +108,7 @@ function toggle(imdb_id, db_list) {
                             const queryString = window.location.search;
                             const urlParams = new URLSearchParams(queryString);
                             const entries = urlParams.entries();
-                            var elements = ['sort', 'direction', 'name', 'rating'];
+                            var elements = ['sort', 'direction', 'name', 'rating', 'wants'];
                             for(const entry of entries) {
                               for (var x=0; x<elements.length; x++) {
                                 if (entry[0] == elements[x]) {
