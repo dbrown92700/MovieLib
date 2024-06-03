@@ -68,14 +68,25 @@ function toggle(imdb_id, db_list) {
                     </td>
                 </tr>
                 <tr>
-                    <td>Available:</td>
-                    {{available_radio}}
-                    <td><input type="button" id="avail_reset" onclick="resetRadio('available')" value="reset"></td>
+                    <td>Watched:</td>
+                    <td>
+                        <select name="watched" id="watched">
+                            <option value=""></option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </td>
+                    <!--<input type="button" id="avail_reset" onclick="resetRadio('available')" value="reset"></td>-->
                 </tr>
                 <tr>
-                    <td>Watched:</td>
-                    {{watched_radio}}
-                    <td><input type="button" id="watch_reset" onclick="resetRadio('watched')" value="reset"></td>
+                    <td>Available:</td>
+                    <td>
+                        <select name="available" id="available">
+                            <option value=""></option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </td>
                 </tr>
                 <tr>
                     <td>IMDB Top 250:</td>
@@ -108,7 +119,7 @@ function toggle(imdb_id, db_list) {
                             const queryString = window.location.search;
                             const urlParams = new URLSearchParams(queryString);
                             const entries = urlParams.entries();
-                            var elements = ['sort', 'direction', 'name', 'rating', 'wants'];
+                            var elements = ['sort', 'direction', 'name', 'rating', 'wants', 'watched', 'available'];
                             for(const entry of entries) {
                               for (var x=0; x<elements.length; x++) {
                                 if (entry[0] == elements[x]) {
