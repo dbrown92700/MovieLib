@@ -147,11 +147,11 @@ def list_movies():
 @app.route('/toggle')
 def toggle():
     db = database()
-    user = request.args.get('user')
+    # user = request.args.get('user')
     imdb_id = request.args.get('imdbId')
     db_list = request.args.get('db_list')
-    db.user = user
-    print(f'Toggle User: {user}')
+    # db.user = user
+    print(f'Toggle User: {db.user}')
     db.toggle_list_entry(imdb_id=imdb_id, movie_list=db_list)
 
     return Markup('ok')
