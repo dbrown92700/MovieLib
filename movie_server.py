@@ -76,11 +76,11 @@ def list_movies():
         wants = db.user_movie_list(movie_list='wants')
         if db.user == 'none':
             print('do something here')
-        movie_table += f'<table border=1>' \
-                       f'<tr><td>Watch:</td><td><img src="/static/{"yes" if movie["imdb_id"] in wants else "no"}.png" ' \
+        movie_table += f'<table>' \
+                       f'<tr><td align="right">Watch:</td><td><img src="/static/{"yes" if movie["imdb_id"] in wants else "no"}.png" ' \
                        f'id="{movie["imdb_id"]}wants" onclick="toggle(\'{movie["imdb_id"]}\', \'wants\')" ' \
                        f'width="20" height="20"></td></tr>' \
-                       f'<tr><td>Watched:</td><td><img src="/static/{"yes" if movie["imdb_id"] in watched else "no"}.png" ' \
+                       f'<tr><td align="right">Watched:</td><td><img src="/static/{"yes" if movie["imdb_id"] in watched else "no"}.png" ' \
                        f'id="{movie["imdb_id"]}watched" onclick="toggle(\'{movie["imdb_id"]}\', \'watched\')" ' \
                        f'width="20" height="20"></td></tr></table>' \
                        f'</td></tr>\n'
