@@ -50,7 +50,9 @@ def list_movies():
         session['user'] = db.user = 'none'
 
     movies, movie_count = db.movie_list(name=name, genre=genre, pagesize=pagesize, page=page,
-                                        rating=rating, year=year, top250=top250, sort=sort, direction=direction)
+                                        rating=rating, year=year, top250=top250,
+                                        watched=watched, wants=available,
+                                        sort=sort, direction=direction)
     match_list = db.db_to_dict(movies)
 
     movie_table = ''
