@@ -138,8 +138,7 @@ def list_movies():
         pages += '>>>next</td>\n'
 
     db.close()
-    return render_template('list_movies.html', genre_menu=Markup(genre_menu), watched_radio=Markup(watched_radio),
-                           available_radio=Markup(available_radio), name=' '.join(name), pages=Markup(pages),
+    return render_template('list_movies.html', genre_menu=Markup(genre_menu), name=' '.join(name), pages=Markup(pages),
                            movie_table=Markup(movie_table), app_url=app_url, top250_radio=Markup(top250_radio),
                            user_list=Markup(user_select))
 
