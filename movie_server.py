@@ -71,6 +71,8 @@ def list_movies():
             movie_table += f'{g}<br>\n'
         watched = db.user_movie_list(movie_list='watched')
         wants = db.user_movie_list(movie_list='wants')
+        if db.user == 'none':
+            print('do something here')
         movie_table += f'<br>Watch: <img src="/static/{"yes" if movie["imdb_id"] in wants else "no"}.png" ' \
                        f'id="{movie["imdb_id"]}wants" onclick="toggle(\'{movie["imdb_id"]}\', \'wants\')" ' \
                        f'width="20" height="20">' \
