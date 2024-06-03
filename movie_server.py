@@ -79,16 +79,17 @@ def list_movies():
                         f'{movie["plot"]}</td>\n<td width=120>')
         for g in movie["genres"]:
             movie_table += f'{g}<br>\n'
-        watched = db.user_movie_list(movie_list='watched')
-        wants = db.user_movie_list(movie_list='wants')
+
+        watched_list = db.user_movie_list(movie_list='watched')
+        wants_list = db.user_movie_list(movie_list='wants')
         if db.user != 'none':
             movie_table += f'<table>' \
                            f'<tr valign="middle"><td align="right">Watch:</td><td>' \
-                           f'<img src="/static/{"yes" if movie["imdb_id"] in wants else "no"}.png" ' \
+                           f'<img src="/static/{"yes" if movie["imdb_id"] in wants_list else "no"}.png" ' \
                            f'id="{movie["imdb_id"]}wants" onclick="toggle(\'{movie["imdb_id"]}\', \'wants\')" ' \
                            f'width="20" height="20"></td></tr>' \
                            f'<tr valign="middle"><td align="right">Watched:</td><td>' \
-                           f'<img src="/static/{"yes" if movie["imdb_id"] in watched else "no"}.png" ' \
+                           f'<img src="/static/{"yes" if movie["imdb_id"] in watched_list else "no"}.png" ' \
                            f'id="{movie["imdb_id"]}watched" onclick="toggle(\'{movie["imdb_id"]}\', \'watched\')" ' \
                            f'width="20" height="20"></td></tr></table>' \
                            f'</td></tr>\n'
@@ -122,7 +123,7 @@ def list_movies():
 
     top250_radio = f'<input type="radio" name="top250" value="True" {"checked" if top250=="True" else ""}>'
 
-    url = (f'{app_url}/?name={"+".join(name)}&genre={genre}&watched={watched}&available={available}&'
+    url = (f'{app_url}/?name={"+".join(name)}&genre={genre}&watched={watched}&wants={wants}&'
            f'rating={rating}&top250={"True" if top250=="True" else ""}&sort={sort}&direction={direction}')
     pages = (f'<td width="350" align="center">Movies {(page-1) * pagesize + 1}-{min(page*pagesize, movie_count)} of '
              f'{movie_count} movies</td>\n'
