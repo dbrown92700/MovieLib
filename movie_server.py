@@ -113,7 +113,7 @@ def list_movies():
         available_radio += f'<td>{choice.title()} <input type="radio" name="available" ' \
                            f'value="{choice}" {selected}></td>'
 
-    top250_radio = f'<td><input type="radio" name="top250" value="True" {"checked" if top250=="True" else ""}></td>'
+    top250_radio = f'<input type="radio" name="top250" value="True" {"checked" if top250=="True" else ""}>'
 
     url = (f'{app_url}/?name={"+".join(name)}&genre={genre}&watched={watched}&available={available}&'
            f'rating={rating}&top250={"True" if top250=="True" else ""}&sort={sort}&direction={direction}')
