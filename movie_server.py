@@ -39,6 +39,7 @@ def list_movies():
     year = int(request.args.get('year') or '0')
     top250 = request.args.get('top250') or False
     watched = request.args.get('watched') or ''
+    wants = request.args.get('wants') or ''
     available = request.args.get('available') or ''
     pagesize = int(request.args.get('pagesize') or '10')
     sort = request.args.get('sort') or 'title'
@@ -51,7 +52,7 @@ def list_movies():
 
     movies, movie_count = db.movie_list(name=name, genre=genre, pagesize=pagesize, page=page,
                                         rating=rating, year=year, top250=top250,
-                                        watched=watched, wants=available,
+                                        watched=watched, wants=wants,
                                         sort=sort, direction=direction)
     match_list = db.db_to_dict(movies)
 

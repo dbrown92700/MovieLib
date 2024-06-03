@@ -39,9 +39,6 @@ function toggle(imdb_id, db_list) {
     }
 }
 </script>
-WANTS: <img src="/static/yes.png" id="12345wants" onclick="toggle(12345, 'wants')"><br>
-WATCHED: <img src="/static/yes.png" id="12345watched" onclick="toggle(12345, 'watched')"><br>
-
 <form target="/">
     <table>
         <tr>
@@ -61,14 +58,24 @@ WATCHED: <img src="/static/yes.png" id="12345watched" onclick="toggle(12345, 'wa
                     <td><input type="text" name="rating" id="rating"></td>
                 </tr>
                 <tr>
-                    <td>Watched:</td>
-                    {{watched_radio}}
-                    <td><input type="button" id="watch_reset" onclick="resetRadio('watched')" value="reset"></td>
+                    <td>Want to Watch:</td>
+                    <td>
+                        <select name="wants" id="wants">
+                            <option value=""></option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </td>
                 </tr>
                 <tr>
                     <td>Available:</td>
                     {{available_radio}}
                     <td><input type="button" id="avail_reset" onclick="resetRadio('available')" value="reset"></td>
+                </tr>
+                <tr>
+                    <td>Watched:</td>
+                    {{watched_radio}}
+                    <td><input type="button" id="watch_reset" onclick="resetRadio('watched')" value="reset"></td>
                 </tr>
                 <tr>
                     <td>IMDB Top 250:</td>
