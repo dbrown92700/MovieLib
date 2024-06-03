@@ -31,11 +31,11 @@ function toggle(imdb_id, db_list) {
     var img = document.getElementById(imdb_id + db_list).src;
     if (img.indexOf('yes.png')!=-1) {
         document.getElementById(imdb_id + db_list).src  = '/static/no.png';
-        $.get('/toggle?user=none&imdbId=' + imdb_id + '&db_list=' + db_list);
+        $.get('/toggle?imdbId=' + imdb_id + '&db_list=' + db_list);
     }
     else {
         document.getElementById(imdb_id + db_list).src = '/static/yes.png';
-        $.get('/toggle?user=none&imdbId=' + imdb_id + '&db_list=' + db_list);
+        $.get('/toggle?imdbId=' + imdb_id + '&db_list=' + db_list);
     }
 }
 
