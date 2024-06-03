@@ -42,7 +42,7 @@ function toggle(imdb_id, db_list) {
 function set_user() {
    var user_id = document.getElementById("user").value;
    console.log(user_id);
-   $.get('/set_user?user=' + user_id);
+   $.get('/user?user=' + user_id);
 }
 </script>
 <form target="/">
