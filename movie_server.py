@@ -44,11 +44,14 @@ def list_movies():
     pagesize = int(request.args.get('pagesize') or '10')
     sort = request.args.get('sort') or 'title'
     direction = request.args.get('direction') or 'ASC'
+    user = request.args.get('user') or 'none'
 
-    try:
-        db.user = session['user']
-    except KeyError:
-        session['user'] = db.user = 'none'
+    db.user = user
+
+    # try:
+    #     db.user = session['user']
+    # except KeyError:
+    #     session['user'] = db.user = 'none'
     user_list = db.user_list()
     user_select = ''
     for u in user_list:
