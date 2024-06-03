@@ -49,6 +49,10 @@ def list_movies():
         db.user = session['user']
     except KeyError:
         session['user'] = db.user = 'none'
+    user_list = db.user_list()
+    user_select = ''
+    for u in user_list:
+        user_select += f'<option value="{u}">{u}</option>\n'
 
     movies, movie_count = db.movie_list(name=name, genre=genre, pagesize=pagesize, page=page,
                                         rating=rating, year=year, top250=top250,
@@ -133,7 +137,8 @@ def list_movies():
     db.close()
     return render_template('list_movies.html', genre_menu=Markup(genre_menu), watched_radio=Markup(watched_radio),
                            available_radio=Markup(available_radio), name=' '.join(name), pages=Markup(pages),
-                           movie_table=Markup(movie_table), app_url=app_url, top250_radio=Markup(top250_radio))
+                           movie_table=Markup(movie_table), app_url=app_url, top250_radio=Markup(top250_radio),
+                           user_list=Markup(user_select))
 
 
 @app.route('/toggle')

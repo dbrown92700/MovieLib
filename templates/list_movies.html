@@ -105,6 +105,14 @@ function toggle(imdb_id, db_list) {
             <table>
                 <tr>
                     <td width="300">
+                        User:
+                        <select name="user" id="user">
+                            {{user_list}}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="300">
                         Sort by:<br>
                         <select name="sort" id="sort">
                             <option value="title" selected="">Title</option>
