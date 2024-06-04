@@ -117,9 +117,9 @@ class DataBase:
         if genre:
             movie_filter.append(f'genre="{genre}"')
         if watched:
-            movie_filter.append(f'movieID {"NOT " if watched=="no" else ""}IN (SELECT * FROM {self.user}_watched)')
+            movie_filter.append(f'movies.movieID {"NOT " if watched=="no" else ""}IN (SELECT * FROM {self.user}_watched)')
         if wants:
-            movie_filter.append(f'movieID {"NOT " if wants=="no" else ""}IN (SELECT * FROM {self.user}_wants)')
+            movie_filter.append(f'movies.movieID {"NOT " if wants=="no" else ""}IN (SELECT * FROM {self.user}_wants)')
         filter_text = ''
         if movie_filter:
             filter_text = f'WHERE {" AND ".join(movie_filter)}'
