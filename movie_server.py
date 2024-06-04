@@ -169,10 +169,10 @@ def set_user():
     user = request.args.get('user')
     session['user'] = user
     if user in db.user_list():
-        result = 'Existing user selected.'
+        result = 'Username already exists.'
     else:
         db.add_user(user)
-        result = 'New user created.'
+        result = f'New user "{user}" created.'
     page = f'<html><body>{result}<br>\n' \
            f'<a href="/?user={user}">Return to main page</a>\n' \
            f'</body></html>'
