@@ -157,6 +157,12 @@ def toggle():
     return Markup('ok')
 
 
+@app.route('/new_user')
+def new_user():
+
+    return render_template('new_user.html')
+
+
 @app.route('/user')
 def set_user():
     db = database()
