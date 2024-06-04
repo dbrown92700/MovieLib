@@ -173,8 +173,11 @@ def set_user():
     else:
         db.add_user(user)
         result = 'New user created.'
+    page = f'<html><body>{result}<br>\n' \
+           f'<a href="/?user={user}">Return to main page</a>\n' \
+           f'</body></html>'
 
-    return Markup(result)
+    return Markup(page)
 
 # @app.route('/search')
 # def search():
