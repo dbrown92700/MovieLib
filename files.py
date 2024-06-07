@@ -32,6 +32,9 @@ class Files:
                     else:
                         files_delta[f]['action'] = 'moved'
                         files_delta[f]['dir'] = directory
+                else:
+                    files_delta[f] = {'action': 'removed',
+                                      'dir': directory}
             added = [x for x in file_list if x not in comp_files]
             for f in added:
                 if f in files_delta.keys():
@@ -40,6 +43,9 @@ class Files:
                     else:
                         files_delta[f]['action'] = 'moved'
                         files_delta[f]['dir'] = directory
+                else:
+                    files_delta[f] = {'action': 'added',
+                                      'dir': directory}
         for directory in comp_dirs_list:
             if directory not in self.dirs.keys():
                 for f in comp_dirs_list[directory]:
@@ -49,6 +55,9 @@ class Files:
                         else:
                             files_delta[f]['action'] = 'moved'
                             files_delta[f]['dir'] = directory
+                else:
+                    files_delta[f] = {'action': 'removed',
+                                      'dir': directory}
 
         return files_delta
 
