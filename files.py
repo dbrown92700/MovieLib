@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 - Lookup new files and add to database
 """
 
+
 class Files:
 
     def __init__(self, root_dir):
@@ -21,10 +22,10 @@ class Files:
         for directory in self.dirs:
             file_list = self.dirs[directory]
             try:
-                comp_files = comp_dirs_list[directory]
+                comp_list = comp_dirs_list[directory]
             except KeyError:
-                comp_files = []
-            removed = [x for x in comp_files if x not in file_list]
+                comp_list = []
+            removed = [x for x in comp_list if x not in file_list]
             for f in removed:
                 if f in files_delta.keys():
                     if files_delta[f]['action'] == 'removed':
@@ -35,7 +36,7 @@ class Files:
                 else:
                     files_delta[f] = {'action': 'removed',
                                       'dir': directory}
-            added = [x for x in file_list if x not in comp_files]
+            added = [x for x in file_list if x not in comp_list]
             for f in added:
                 if f in files_delta.keys():
                     if files_delta[f]['action'] == 'added':
@@ -54,10 +55,9 @@ class Files:
                             continue
                         else:
                             files_delta[f]['action'] = 'moved'
-                            files_delta[f]['dir'] = directory
-                else:
-                    files_delta[f] = {'action': 'removed',
-                                      'dir': directory}
+                    else:
+                        files_delta[f] = {'action': 'removed',
+                                          'dir': directory}
 
         return files_delta
 

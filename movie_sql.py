@@ -25,6 +25,11 @@ movie_genres = ('(movieId nchar(20) NOT NULL,'
                 ' FOREIGN KEY (movieId) REFERENCES movies (movieId),'
                 ' FOREIGN KEY (genreId) REFERENCES genres (genreId)'
                 ')')
+file_error = ('(fileId smallint NOT NULL AUTO_INCREMENT,'
+              ' file nchar(255),'
+              ' directoryId nchar(255),'
+              ' PRIMARY KEY (fileId)'
+              ')')
 
 
 class DataBase:
@@ -51,6 +56,7 @@ class DataBase:
             self.cursor.execute(f'CREATE TABLE users (user nchar(32) not NULL);')
             self.cursor.execute(f'INSERT INTO users (user) VALUES ("none");')
             logger.info(f'Created tables users, none_watched and none_wants')
+            self.cursor.execute(f'CREATE TABLE file_errors {file_error};')
         self.cursor.execute(f'SELECT * FROM genres;')
         self.user = 'none'
         genres = self.cursor.fetchall()
@@ -86,8 +92,6 @@ class DataBase:
                   f'VALUES ("{movie.imdb_id}", "{movie.filename}", "{movie.directory}", ' \
                   f'"{movie.imdb_data["title"]}", "{movie.imdb_data["year"]}", "{movie.imdb_data["rating"]}", ' \
                   f'"{plot}", "{movie.imdb_data["top250"]}", "{movie.imdb_data["cover url"]}");'
-        print(command)
-
         self.cursor.execute(command)
         self.cnx.commit()
         for genre in movie.imdb_data['genres']:
@@ -96,10 +100,21 @@ class DataBase:
             command = f'INSERT INTO movie_genres (movieId, genreId) VALUES ("{movie.imdb_id}", {self.genre_dict[genre]});'
             self.cursor.execute(command)
             self.cnx.commit()
-        logger.info(f'Added to database: {movie.filename} : {movie.imdb_data["title"]}')
+        logger.info(f'File Added: {movie.filename} : {movie.imdb_data["title"]}')
+
+        return {'status': 'success'}
+
+    def delete(self, imdb_id='', file=''):
+
+        if file and not imdb_id:
+            self.cursor.execute(f'SELECT movieID FROM movies WHERE file="{file}";')
+            imdb_id = self.cursor.fetchall()[0][0]
+        self.cursor.execute(f'DELETE FROM movie_genres WHERE movieID="{imdb_id}";')
+        self.cursor.execute(f'DELETE FROM movies WHERE movieID="{imdb_id}";')
+        logger.info(f'File Deleted: Removed {file} from database')
 
     def movie_list(self, imdb_id='', name='', genre='', rating=-1.1, year=0, top250=False, page=1, pagesize=10,
-                   sort='title', direction='ASC', watched='', wants=''):
+                   sort='title', direction='ASC', watched='', wants='', file=''):
         # Returns a list of movies using the filters specified and the count of movies in the form
         # ([(movie1),(movie2)], count)
 
@@ -120,6 +135,8 @@ class DataBase:
             movie_filter.append(f'movies.movieID {"NOT " if watched=="no" else ""}IN (SELECT * FROM {self.user}_watched)')
         if wants:
             movie_filter.append(f'movies.movieID {"NOT " if wants=="no" else ""}IN (SELECT * FROM {self.user}_wants)')
+        if file:
+            movie_filter.append(f'file="{file}"')
         filter_text = ''
         if movie_filter:
             filter_text = f'WHERE {" AND ".join(movie_filter)}'
@@ -230,8 +247,31 @@ class DataBase:
         self.cursor.execute(command)
 
     def user_movie_list(self, movie_list='wants'):
+
         self.cursor.execute(f'SELECT * FROM {self.user}_{movie_list};')
         movies = self.cursor.fetchall()
 
         return [m[0] for m in movies]
+
+    def update_dir(self, directory: str, imdb_id='', file=''):
+
+        if file and not imdb_id:
+            self.cursor.execute(f'SELECT movieID FROM movies WHERE file="{file}";')
+            imdb_id = self.cursor.fetchall()[0][0]
+        self.cursor.execute(f'UPDATE movies SET directoryId="{directory}" WHERE movieId="{imdb_id}";')
+        logger.info(f'File Moved: {file} moved to directory {directory}')
+
+    def update_file_errors(self, files: dict):
+
+        self.cursor.execute('DELETE FROM file_errors;')
+        for file in files:
+            self.cursor.execute(f'INSERT INTO file_errors (file, directoryId) '
+                                f'values ("{file}", "{files[file]}");')
+
+    def file_errors(self):
+
+        self.cursor.execute('SELECT * FROM file_errors;')
+        errors = self.cursor.fetchall()
+
+        return errors
 

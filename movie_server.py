@@ -16,8 +16,7 @@ app.secret_key = 'any random string'
 app_url = os.environ.get('SCRIPT_NAME') or ''
 server_ip = os.environ.get('SERVER_IP') or '127.0.0.1'
 server_port = os.environ.get('SERVER_PORT') or '8111'
-
-root_dir = '/media/db/Elements/Movies_TV/New Movies'
+root_dir = os.getenv('MOVIE_ROOT')
 
 
 def database():
@@ -106,21 +105,6 @@ def list_movies():
             selected = ' selected'
         genre_menu += f'<option value="{genre_item}"{selected}>{genre_item}</option>\n'
 
-    # watched_radio = ''
-    # for choice in ['yes', 'no']:
-    #     selected = ''
-    #     if choice == watched:
-    #         selected = 'checked'
-    #     watched_radio += f'<td>{choice.title()} <input type="radio" name="watched" value="{choice}" {selected}></td>'
-    #
-    # available_radio = ''
-    # for choice in ['yes', 'no']:
-    #     selected = ''
-    #     if choice == available:
-    #         selected = 'checked'
-    #     available_radio += f'<td>{choice.title()} <input type="radio" name="available" ' \
-    #                        f'value="{choice}" {selected}></td>'
-
     top250_radio = f'<input type="radio" name="top250" value="True" {"checked" if top250=="True" else ""}>'
 
     url = (f'{app_url}/?user={user}&name={"+".join(name)}&genre={genre}&watched={watched}&wants={wants}&'
@@ -178,6 +162,19 @@ def set_user():
            f'</body></html>'
 
     return Markup(page)
+
+
+@app.route('/errors')
+def file_errors():
+    db = database()
+    files = db.file_errors()
+    page = '<html><body>\n'
+    for file in files:
+        page += f'{file[0]}: {file[2]}/{file[1]}<br>\n'
+    page += '</body></html>'
+
+    return Markup(page)
+
 
 # @app.route('/search')
 # def search():
