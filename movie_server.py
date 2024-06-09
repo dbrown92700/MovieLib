@@ -142,7 +142,7 @@ def set_user():
 
 
 @app.route('/user')
-def set_user():
+def user():
     db = database()
     user_list = db.user_list()
     user_select = ''
