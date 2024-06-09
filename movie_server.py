@@ -44,14 +44,14 @@ def list_movies():
     pagesize = int(request.args.get('pagesize') or '10')
     sort = request.args.get('sort') or 'title'
     direction = request.args.get('direction') or 'ASC'
-    user = request.args.get('user') or 'none'
+    # user = request.args.get('user') or 'none'
+    #
+    # db.user = session['user'] = user
 
-    db.user = session['user'] = user
-
-    # try:
-    #     db.user = session['user']
-    # except KeyError:
-    #     session['user'] = db.user = 'none'
+    try:
+        db.user = session['user']
+    except KeyError:
+        session['user'] = db.user = 'none'
     user_list = db.user_list()
     user_select = ''
     for u in user_list:
@@ -106,21 +106,6 @@ def list_movies():
             selected = ' selected'
         genre_menu += f'<option value="{genre_item}"{selected}>{genre_item}</option>\n'
 
-    # watched_radio = ''
-    # for choice in ['yes', 'no']:
-    #     selected = ''
-    #     if choice == watched:
-    #         selected = 'checked'
-    #     watched_radio += f'<td>{choice.title()} <input type="radio" name="watched" value="{choice}" {selected}></td>'
-    #
-    # available_radio = ''
-    # for choice in ['yes', 'no']:
-    #     selected = ''
-    #     if choice == available:
-    #         selected = 'checked'
-    #     available_radio += f'<td>{choice.title()} <input type="radio" name="available" ' \
-    #                        f'value="{choice}" {selected}></td>'
-
     top250_radio = f'<input type="radio" name="top250" value="True" {"checked" if top250=="True" else ""}>'
 
     url = (f'{app_url}/?user={user}&name={"+".join(name)}&genre={genre}&watched={watched}&wants={wants}&'
@@ -141,7 +126,7 @@ def list_movies():
     db.close()
     return render_template('list_movies.html', genre_menu=Markup(genre_menu), name=' '.join(name), pages=Markup(pages),
                            movie_table=Markup(movie_table), app_url=app_url, top250_radio=Markup(top250_radio),
-                           user_list=Markup(user_select))
+                           user=db.user, user_list=Markup(user_select))
 
 
 @app.route('/toggle')
