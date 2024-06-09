@@ -4,7 +4,7 @@ from imdb import Cinemagoer
 import logging
 logger = logging.getLogger(__name__)
 
-movie_suffixes = ['.mkv', '.mp4', '.avi']
+movie_suffixes = ['.mkv', '.mp4', '.avi', 'm4v']
 imdb_detail = ['title', 'year', 'rating', 'plot', 'genres', 'cover url']
 
 
