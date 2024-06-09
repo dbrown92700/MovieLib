@@ -8,8 +8,7 @@ from flask import Flask, request, render_template, redirect, session
 from markupsafe import Markup
 import os
 from movie_sql import DataBase
-from base64 import urlsafe_b64encode
-
+import urllib.parse
 
 app = Flask(__name__)
 app.secret_key = 'any random string'
@@ -165,8 +164,8 @@ def file_errors():
     files = db.file_errors()
     page = '<html><body>\n'
     for file in files:
-        # args = urlsafe_b64encode(f'set_imdb?db={file[0]}&file={file[1]}&dir={file[2]}')
-        page += f'<a href="/set_imdb?db={file[0]}&file={file[1]}&dir={file[2]}">{file[0]}: {file[2]}/{file[1]}</a><br>\n'
+        url = urllib.parse.quote(f'/set_imdb?db={file[0]}&file={file[1]}&dir={file[2]}')
+        page += f'<a href="{url}">{file[0]}: {file[2]}/{file[1]}</a><br>\n'
     page += '</body></html>'
 
     return Markup(page)
