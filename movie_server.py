@@ -172,7 +172,12 @@ def file_errors():
 
 @app.route('/set_imdb')
 def set_imdb():
-    ...
+    db = database()
+    db_num = request.args.get('db')
+    file = request.args.get('file')
+    dir = request.args.get('dir')
+
+    return Markup(f'{db_num}<br>{file}<br>{dir}')
 
 
 # @app.route('/search')
