@@ -10,7 +10,7 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 root_dir = os.getenv('MOVIE_ROOT')
 log_dir = os.getenv('LOG_DIR')
-movie_extensions = ['mkv', 'mp4']
+movie_extensions = ['mkv', 'mp4', 'm4v']
 
 if __name__ == '__main__':
     t = datetime.now()

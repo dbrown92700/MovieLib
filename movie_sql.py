@@ -264,6 +264,7 @@ class DataBase:
     def update_file_errors(self, files: dict):
 
         self.cursor.execute('DELETE FROM file_errors;')
+        self.cursor.execute('ALTER TABLE file_errors AUTO_INCREMENT = 1;')
         for file in files:
             self.cursor.execute(f'INSERT INTO file_errors (file, directoryId) '
                                 f'values ("{file}", "{files[file]}");')
