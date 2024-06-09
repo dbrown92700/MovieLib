@@ -9,6 +9,7 @@ from markupsafe import Markup
 import os
 from movie_sql import DataBase
 import urllib.parse
+from movie import Movie
 
 app = Flask(__name__)
 app.secret_key = 'any random string'
@@ -164,12 +165,25 @@ def file_errors():
     files = db.file_errors()
     page = '<html><body>\n'
     for file in files:
-        # url = urllib.parse.quote(f'/set_imdb?db={file[0]}&file={file[1]}&dir={file[2]}')
-        page += f'<a href="/set_imdb?db={file[0]}&file={urllib.parse.quote(file[1])}&' \
-                f'dir={urllib.parse.quote(file[2])}">{file[0]}: {file[2]}/{file[1]}</a><br>\n'
+        url = f'/get_imdb?db={file[0]}&file={urllib.parse.quote(file[1])}&dir={urllib.parse.quote(file[2])}'
+        page += f'<a href="{url}">{file[0]}: {file[2]}/{file[1]}</a><br>\n'
     page += '</body></html>'
 
     return Markup(page)
+
+
+@app.route('/get_imdb')
+def get_imdb():
+    db_num = request.args.get('db')
+    file = request.args.get('file')
+    dir = request.args.get('dir')
+    url = f'/set_imdb?db={db_num}&file={urllib.parse.quote(file)}&dir={urllib.parse.quote(dir)}'
+    page = f'<html><body>{db_num}<br>{file}<br>{dir}<br>\n' \
+           f'<form action="{url}"><input type="text" name="imdb_id"><input type="submit"></form>' \
+           f'</html></body>'
+
+    return Markup(f'page')
+
 
 @app.route('/set_imdb')
 def set_imdb():
@@ -177,8 +191,15 @@ def set_imdb():
     db_num = request.args.get('db')
     file = request.args.get('file')
     dir = request.args.get('dir')
-
-    return Markup(f'{db_num}<br>{file}<br>{dir}')
+    imdb_id = request.args.get('imdb_id')
+    movie = Movie(filename=file, directory=dir)
+    movie.get_imdb(imdb_id=imdb_id)
+    result = db.insert_movie(movie)
+    if result['status'] == 'success':
+        db.file_error_remove(int(db_num))
+        return redirect('/file_errors')
+    else:
+        return Markup(result)
 
 
 # @app.route('/search')

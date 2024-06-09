@@ -276,3 +276,7 @@ class DataBase:
 
         return errors
 
+    def file_error_remove(self, file_num: int):
+
+        self.cursor.execute(f'DELETE FROM file_errors WHERE fileId={file_num};')
+
