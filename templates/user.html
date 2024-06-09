@@ -5,7 +5,13 @@
     <title>Create User</title>
 </head>
 <body>
-<form action="/user" method="get">
+<form action="/set_user" method="get">
+    Select Existing User: <select name="user" id="user">
+    {{user_list}}
+</select><br>
+    <input type="submit">
+</form>
+<form action="/set_user" method="get">
     Username: <input type="text" name="user" id="user"><br>
     <input type="submit">
 </form>

@@ -43,18 +43,11 @@ def list_movies():
     pagesize = int(request.args.get('pagesize') or '10')
     sort = request.args.get('sort') or 'title'
     direction = request.args.get('direction') or 'ASC'
-    # user = request.args.get('user') or 'none'
-    #
-    # db.user = session['user'] = user
 
     try:
         db.user = session['user']
     except KeyError:
         session['user'] = db.user = 'none'
-    user_list = db.user_list()
-    user_select = ''
-    for u in user_list:
-        user_select += f'<option value="{u}">{u}</option>\n'
 
     movies, movie_count = db.movie_list(name=name, genre=genre, pagesize=pagesize, page=page,
                                         rating=rating, year=year, top250=top250,
@@ -125,7 +118,7 @@ def list_movies():
     db.close()
     return render_template('list_movies.html', genre_menu=Markup(genre_menu), name=' '.join(name), pages=Markup(pages),
                            movie_table=Markup(movie_table), app_url=app_url, top250_radio=Markup(top250_radio),
-                           user=db.user, user_list=Markup(user_select))
+                           user=db.user)
 
 
 @app.route('/toggle')
@@ -141,27 +134,22 @@ def toggle():
     return Markup('ok')
 
 
-@app.route('/new_user')
-def new_user():
+@app.route('/set_user')
+def set_user():
+    session['user'] = request.args.get('user')
 
-    return render_template('new_user.html')
+    return redirect('/')
 
 
 @app.route('/user')
 def set_user():
     db = database()
-    user = request.args.get('user')
-    session['user'] = user
-    if user in db.user_list():
-        result = 'Username already exists.'
-    else:
-        db.add_user(user)
-        result = f'New user "{user}" created.'
-    page = f'<html><body>{result}<br>\n' \
-           f'<a href="/?user={user}">Return to main page</a>\n' \
-           f'</body></html>'
+    user_list = db.user_list()
+    user_select = ''
+    for u in user_list:
+        user_select += f'<option value="{u}">{u}</option>\n'
 
-    return Markup(page)
+    return render_template('user.html', user_list=Markup(user_select))
 
 
 @app.route('/errors')
