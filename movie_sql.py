@@ -124,7 +124,7 @@ class DataBase:
         if name:
             movie_filter.append(f'movies.title LIKE "%{name}%"')
         if rating > 0:
-            movie_filter.append(f'movies.rating>{rating}')
+            movie_filter.append(f'movies.rating>={rating}')
         if year > 0:
             movie_filter.append(f'movies.year={year}')
         if top250:
