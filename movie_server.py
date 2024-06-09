@@ -166,7 +166,7 @@ def file_errors():
     page = '<html><body>\n'
     for file in files:
         args = urlsafe_b64encode(f'set_imdb?db={file[0]}&file={file[1]}&dir={file[2]}')
-        page += f'<a href="/{args}">{file[0]}: {file[2]}/{file[1]}</a><br>\n'
+        page += f'<a href="/set_imdb?db={file[0]}&file={file[1]}&dir={file[2]}">{file[0]}: {file[2]}/{file[1]}</a><br>\n'
     page += '</body></html>'
 
     return Markup(page)
