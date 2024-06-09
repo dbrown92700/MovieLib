@@ -177,9 +177,12 @@ def get_imdb():
     db_num = request.args.get('db')
     file = request.args.get('file')
     dir = request.args.get('dir')
-    url = f'/set_imdb?db={db_num}&file={urllib.parse.quote(file)}&dir={urllib.parse.quote(dir)}'
     page = f'<html><body>{db_num}<br>{file}<br>{dir}<br>\n' \
-           f'<form action="{url}"><input type="text" name="imdb_id"><input type="submit"></form>' \
+           f'<form action="/set_imdb">' \
+           f'<input type="hidden" id="db" name="db" value="{db_num}">' \
+           f'<input type="hidden" id="file" name="file" value="{urllib.parse.quote(file)}">' \
+           f'<input type="hidden" id="dir" name="dir" value="{urllib.parse.quote(dir)}">' \
+           f'<input type="text" name="imdb_id"><input type="submit"></form>' \
            f'</html></body>'
 
     return Markup(page)
@@ -197,7 +200,7 @@ def set_imdb():
     result = db.insert_movie(movie)
     if result['status'] == 'success':
         db.file_error_remove(int(db_num))
-        return redirect('/file_errors')
+        return redirect('/errors')
     else:
         return Markup(result)
 
