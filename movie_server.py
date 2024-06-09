@@ -169,6 +169,17 @@ def file_errors():
     return Markup(page)
 
 
+@app.route('/errors')
+def file_errors()
+    db = database()
+    errors = db.file_errors()
+    page = '<html><body>\n'
+    for e in errors:
+        page += f'<a href="/edit?file={file}">{e[1]}</a><br>\n'
+    page += '</body></html>'
+
+    return Markup(page)
+
 # @app.route('/search')
 # def search():
 #
