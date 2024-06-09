@@ -164,8 +164,9 @@ def file_errors():
     files = db.file_errors()
     page = '<html><body>\n'
     for file in files:
-        url = urllib.parse.quote(f'/set_imdb?db={file[0]}&file={file[1]}&dir={file[2]}')
-        page += f'<a href="{url}">{file[0]}: {file[2]}/{file[1]}</a><br>\n'
+        # url = urllib.parse.quote(f'/set_imdb?db={file[0]}&file={file[1]}&dir={file[2]}')
+        page += f'<a href="/set_imdb?db={file[0]}&file={urllib.parse.quote(file[1])}&' \
+                f'dir={urllib.parse.quote(file[2])}">{file[0]}: {file[2]}/{file[1]}</a><br>\n'
     page += '</body></html>'
 
     return Markup(page)
