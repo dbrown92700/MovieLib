@@ -136,7 +136,7 @@ def toggle():
 def set_user():
     db = database()
     user = request.args.get('user') or None
-    new_user = request.args.get('new_user') or None\
+    new_user = request.args.get('new_user') or None
     if user:
         session['user'] = user
     if new_user:
