@@ -49,7 +49,7 @@ function set_user() {
     <table>
         <tr valign="top">
             <td width = 400>
-            <table border="1">
+            <table>
                 <tr><td>Search by name:</td><td colspan="3"><input type="text" name="name" id="name"></td></tr>
                 <tr><td>Search by genre:</td>
                     <td colspan="3">
@@ -82,7 +82,6 @@ function set_user() {
                             <option value="no">No</option>
                         </select>
                     </td>
-                    <!--<input type="button" id="avail_reset" onclick="resetRadio('available')" value="reset"></td>-->
                 </tr>
                 <tr>
                     <td>Available:</td>
@@ -108,7 +107,7 @@ function set_user() {
             </table>
             <td width="20"></td>
             <td>
-            <table border="1">
+            <table>
                 <tr>
                     <td width="320" align="right">
                         User: <b>{{user}}</b><br>
@@ -145,7 +144,7 @@ function set_user() {
                     </td>
                 </tr>
                             <td width="200" align="center">
-                                <br><br>
+                                <br><br><br><br>
                 <a href="{{app_url}}/search">Add a new movie</a>
             </td>
                 <tr></tr>
