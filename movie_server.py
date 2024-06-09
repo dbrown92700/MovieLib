@@ -6,9 +6,7 @@ __contributors__ = []
 import requests
 from flask import Flask, request, render_template, redirect, session
 from markupsafe import Markup
-import json
 import os
-from datetime import datetime
 from movie_sql import DataBase
 
 app = Flask(__name__)
@@ -136,13 +134,20 @@ def toggle():
 
 @app.route('/set_user')
 def set_user():
-    session['user'] = request.args.get('user')
+    db = database()
+    user = request.args.get('user') or None
+    new_user = request.args.get('new_user') or None\
+    if user:
+        session['user'] = user
+    if new_user:
+        db.add_user(new_user)
+        session['user'] = new_user
 
     return redirect('/')
 
 
 @app.route('/user')
-def user():
+def get_user():
     db = database()
     user_list = db.user_list()
     user_select = ''
