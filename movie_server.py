@@ -16,8 +16,7 @@ app.secret_key = 'any random string'
 app_url = os.environ.get('SCRIPT_NAME') or ''
 server_ip = os.environ.get('SERVER_IP') or '127.0.0.1'
 server_port = os.environ.get('SERVER_PORT') or '8111'
-
-root_dir = '/media/db/Elements/Movies_TV/New Movies'
+root_dir = os.getenv('MOVIE_ROOT')
 
 
 def database():
@@ -163,6 +162,19 @@ def set_user():
            f'</body></html>'
 
     return Markup(page)
+
+
+@app.route('/errors')
+def file_errors():
+    db = database()
+    files = db.file_errors()
+    page = '<html><body>\n'
+    for file in files:
+        page += f'{file[0]}: {file[2]}/{file[1]}<br>\n'
+    page += '</body></html>'
+
+    return Markup(page)
+
 
 # @app.route('/search')
 # def search():
