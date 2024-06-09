@@ -170,7 +170,7 @@ def file_errors():
 
 
 @app.route('/errors')
-def file_errors()
+def file_errors():
     db = database()
     errors = db.file_errors()
     page = '<html><body>\n'
