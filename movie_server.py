@@ -182,7 +182,7 @@ def get_imdb():
            f'<form action="{url}"><input type="text" name="imdb_id"><input type="submit"></form>' \
            f'</html></body>'
 
-    return Markup(f'page')
+    return Markup(page)
 
 
 @app.route('/set_imdb')
