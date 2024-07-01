@@ -163,7 +163,6 @@ def edit_entry():
     return Markup(page)
 
 
-
 @app.route('/user')
 def get_user():
     db = database()
