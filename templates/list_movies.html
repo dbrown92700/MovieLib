@@ -45,7 +45,7 @@ function set_user() {
    $.get('/user?user=' + user_id);
 }
 </script>
-<form target="/">
+<form action="/">
     <table>
         <tr valign="top">
             <td width = 400>
@@ -111,7 +111,7 @@ function set_user() {
                 <tr>
                     <td width="320" align="right">
                         User: <b>{{user}}</b><br>
-                        <a href="/user">Change user</a><br><br>
+                        <a href="user">Change user</a><br><br>
                     </td>
                 </tr>
                 <tr>
