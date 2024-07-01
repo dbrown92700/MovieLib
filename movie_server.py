@@ -156,11 +156,31 @@ def edit_entry():
     movie_data = db.db_to_dict(movie_db)[0]
     page = f'<html><body>Filename: {movie_data["file"]}<br>\n' \
            f'<form action="/set_imdb">\n' \
-           f'<input type="hidden" id="imdb_id" name="imdb_id" value="{imdb_id}">\n' \
-           f'<input type="text" name="new_id" value="{imdb_id}"><input type="submit" value="Set IMDB ID"></form>' \
+           f'<input type="hidden" id="id" name="imdb_id" value="{imdb_id}">\n' \
+           f'<input type="hidden" id="file" name="file" value="{movie_data["file"]}">\n' \
+           f'<input type="hidden" id="dir" name="dir" value="{movie_data["directoryId"]}}">\n' \
+           f'<input type="text" name="new_id" value="{imdb_id}"><input type="submit" value="Change IMDB ID"></form>' \
            f'</html></body>'
 
     return Markup(page)
+
+
+@app.route('/change_imdb')
+def change_imdb():
+    imdb_id = request.args.get('id')
+    new_id = request.args.get('new_id')
+    file = request.args.get('file')
+    directory = request.args.get('dir')
+    new_movie = Movie(filename=file, directory=directory)
+    new_movie.get_imdb(imdb_id=new_id)
+    db = database()
+    result = db.insert_movie(new_movie)
+    if result['status'] == 'duplicate':
+        return Markup('<html>New IMDB already exists in database. Entry not changed.<br>\n'
+                      '<a href="/">Movie List</a></html>')
+    else:
+        db.delete(imdb_id=imdb_id)
+        return redirect('/')
 
 
 @app.route('/user')
@@ -201,6 +221,8 @@ def get_imdb():
            f'</html></body>'
 
     return Markup(page)
+
+
 
 
 @app.route('/set_imdb')
