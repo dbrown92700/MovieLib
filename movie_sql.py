@@ -129,6 +129,8 @@ class DataBase:
             movie_filter.append(f'movies.year={year}')
         if top250:
             movie_filter.append(f'movies.top250rank<300')
+            sort = 'top250rank'
+            direction = 'ASC'
         if genre:
             movie_filter.append(f'genre="{genre}"')
         if watched:

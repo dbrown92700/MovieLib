@@ -178,7 +178,7 @@ def change_imdb():
     result = db.insert_movie(new_movie)
     if result['status'] == 'duplicate':
         return Markup(f'<html>New IMDB ({new_id}) already exists in database. Entry not changed.<br>\n'
-                      f'<a href="/">Movie List</a>\n{new_movie}</html>')
+                      f'<a href="/">Movie List</a>\n</html>')
     else:
         db.delete(imdb_id=imdb_id)
         return redirect('/')
