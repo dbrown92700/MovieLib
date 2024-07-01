@@ -134,9 +134,6 @@ def toggle():
 
     return Markup('ok')
 
-@app.route('/path')
-def path():
-    return app.instance_path
 
 @app.route('/set_user')
 def set_user():
