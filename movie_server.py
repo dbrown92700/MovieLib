@@ -19,7 +19,6 @@ server_port = os.environ.get('SERVER_PORT') or '8111'
 root_dir = os.getenv('MOVIE_ROOT')
 
 
-
 def database():
     db = DataBase(server='0.0.0.0',
                   user=os.getenv('DB_USER'),
