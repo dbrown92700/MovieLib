@@ -148,6 +148,22 @@ def set_user():
     return redirect('/')
 
 
+@app.route('/edit')
+def edit_entry():
+    imdb_id = request.args.get('id')
+    db = database()
+    movie_db, movie_count = db.movie_list(imdb_id=imdb_id)
+    movie_data = db.db_to_dict(movie_db)[0]
+    page = f'<html><body>Filename: {movie_data["file"]}<br>\n' \
+           f'<form action="/set_imdb">\n' \
+           f'<input type="hidden" id="imdb_id" name="imdb_id" value="{imdb_id}">\n' \
+           f'<input type="text" name="new_id" value="{imdb_id}"><input type="submit" value="Set IMDB ID"></form>' \
+           f'</html></body>'
+
+    return Markup(page)
+
+
+
 @app.route('/user')
 def get_user():
     db = database()
@@ -182,7 +198,7 @@ def get_imdb():
            f'<input type="hidden" id="db" name="db" value="{db_num}">' \
            f'<input type="hidden" id="file" name="file" value="{file}">' \
            f'<input type="hidden" id="dir" name="dir" value="{dir}">' \
-           f'<input type="text" name="imdb_id"><input type="submit"></form>' \
+           f'<input type="text" name="imdb_id"><input type="submit" value="Set IMDB ID"></form>' \
            f'</html></body>'
 
     return Markup(page)
