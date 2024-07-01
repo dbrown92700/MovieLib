@@ -158,7 +158,7 @@ def edit_entry():
            f'<form action="/set_imdb">\n' \
            f'<input type="hidden" id="id" name="imdb_id" value="{imdb_id}">\n' \
            f'<input type="hidden" id="file" name="file" value="{movie_data["file"]}">\n' \
-           f'<input type="hidden" id="dir" name="dir" value="{movie_data["directoryId"]}}">\n' \
+           f'<input type="hidden" id="dir" name="dir" value="{movie_data["directoryId"]}">\n' \
            f'<input type="text" name="new_id" value="{imdb_id}"><input type="submit" value="Change IMDB ID"></form>' \
            f'</html></body>'
 
