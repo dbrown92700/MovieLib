@@ -177,8 +177,8 @@ def change_imdb():
     db = database()
     result = db.insert_movie(new_movie)
     if result['status'] == 'duplicate':
-        return Markup('<html>New IMDB already exists in database. Entry not changed.<br>\n'
-                      '<a href="/">Movie List</a></html>')
+        return Markup(f'<html>New IMDB ({new_id}) already exists in database. Entry not changed.<br>\n'
+                      f'<a href="/">Movie List</a>\n{new_movie}</html>')
     else:
         db.delete(imdb_id=imdb_id)
         return redirect('/')
@@ -224,8 +224,6 @@ def get_imdb():
     return Markup(page)
 
 
-
-
 @app.route('/set_imdb')
 def set_imdb():
     db = database()
@@ -241,146 +239,6 @@ def set_imdb():
         return redirect('/errors')
     else:
         return Markup(result)
-
-
-# @app.route('/search')
-# def search():
-#
-#     return render_template('search.html', app_url=app_url)
-#
-#
-# @app.route('/results')
-# def search_result():
-#
-#     api_key = os.environ.get('IMDB_API_KEY')
-#     search_text = request.args.get("search_text").replace('+', '%20')
-#     results = json.loads(requests.get(f'https://imdb-api.com/en/API/Search/{api_key}/{search_text}').text)
-#
-#     if results['results'] is None:
-#         return render_template('error.html', err=results, key=api_key, app_url=app_url)
-#
-#     expression = results["expression"]
-#     movie_table = ''
-#     for result in results['results']:
-#         movie_table += f'<tr>\n \
-#                 <td width=200><a href="https://imdb.com/title/{result["id"]}/" target="_imdb">{result["title"]}<br> \
-#                 {result["description"]}</a></td>\n \
-#                 <td width=100 align=left><static src="{result["image"]}" height=120 width=80></td>\n \
-#                 <td width=50><a href="{app_url}/add?id={result["id"]}">Add</a></td>\n'
-#
-#     return render_template('search_result.html', expression=expression, movie_table=Markup(movie_table),
-#                            app_url=app_url)
-#
-#
-# @app.route('/add')
-# def add_movie():
-#
-#     global movie_list
-#     imdb_id = request.args.get("id")
-#     api_key = os.environ.get('IMDB_API_KEY')
-#
-#     url = f'https://imdb-api.com/en/API/Title/{api_key}/{imdb_id}'
-#     title = json.loads(requests.get(url).text)
-#
-#     genres = title['genres'].split(',')
-#     genres = ':'.join([genres[x].lstrip(' ') for x in range(len(genres))])
-#     new_movie = {'id': imdb_id, 'title': title['fullTitle'].replace(',', '~^'), 'image': title['image'],
-#                  'rating': title['imDbRating'], 'plot': title['plot'].replace(',', '~^'), 'genres': genres,
-#                  'watched': 'no', 'available': 'yes'}
-#     # for value in new_movie:
-#     #     new_movie[value] = new_movie[value].encode('utf-8')
-#     #     print(new_movie[value])
-#     found = False
-#     for movie in movie_list:
-#         if movie['id'] == new_movie['id']:
-#             movie_list[movie_list.index(movie)] = new_movie
-#             found = True
-#             break
-#         if float(new_movie['rating']) > float(movie['rating']):
-#             movie_list.insert(movie_list.index(movie), new_movie)
-#             found = True
-#             break
-#     if not found:
-#         movie_list.append(new_movie)
-#
-#     write_movie_file()
-#
-#     return redirect(f'{app_url}/edit?id={imdb_id}')
-#
-#
-# @app.route('/edit')
-# def edit_movie():
-#
-#     global movie_list
-#
-#     imdb_id = request.args.get("id")
-#     for movie in movie_list:
-#         if movie['id'] == imdb_id:
-#             break
-#     movie_table = f'<tr>\n' \
-#                   f'<td width=200><a href="https://imdb.com/title/{movie["id"]}/" target="_imdb">' \
-#                   f'{movie["title"].replace("~^",",")}</a></td>\n' \
-#                   f'<td width=90 align=left><static src="{movie["image"]}" height=120 width=80></td>\n' \
-#                   f'<td width=30>{movie["rating"]}</td>\n' \
-#                   f'<td width=300 style="border: 1px solid black;">\n' \
-#                   f'<div style="height:120px;width:300px;overflow:auto;">{movie["plot"].replace("~^", ",")}</td>\n' \
-#                   f'<td width=80>'
-#     for this in movie["genres"].split(':'):
-#         movie_table += f'{this}<br>\n'
-#     movie_table += f'</td></tr></table>\n'
-#
-#     watched_radio = ''
-#     for choice in ['yes', 'no']:
-#         selected = ''
-#         if choice == movie['watched']:
-#             selected = 'checked'
-#         watched_radio += f'<td width="50">{choice.title()} ' \
-#                          f'<input type="radio" name="watched" value="{choice}" {selected}></td>'
-#
-#     available_radio = ''
-#     for choice in ['yes', 'no']:
-#         selected = ''
-#         if choice == movie['available']:
-#             selected = 'checked'
-#         available_radio += f'<td>{choice.title()} ' \
-#                            f'<input type="radio" name="available" value="{choice}" {selected}></td>'
-#
-#     return render_template('edit_movie.html', title=movie['title'], movie_table=Markup(movie_table),
-#                            watched_radio=Markup(watched_radio), available_radio=Markup(available_radio),
-#                            id=movie['id'], app_url=app_url)
-
-
-# @app.route('/delete')
-# def delete_movie():
-#
-#     global movie_list
-#
-#     imdb_id = request.args.get("id")
-#     for movie in movie_list:
-#         if movie['id'] == imdb_id:
-#             list_index = movie_list.index(movie)
-#             movie_list.pop(list_index)
-#     write_movie_file()
-#
-#     return redirect(f'{app_url}/')
-
-
-# @app.route('/save')
-# def save_movie():
-#
-#     global movie_list
-#
-#     imdb_id = request.args.get("id")
-#     watched = request.args.get("watched")
-#     available = request.args.get("available")
-#
-#     for movie in movie_list:
-#         if movie['id'] == imdb_id:
-#             list_index = movie_list.index(movie)
-#             movie_list[list_index]['watched'] = watched
-#             movie_list[list_index]['available'] = available
-#     write_movie_file()
-#     return redirect(f'{app_url}/')
 
 
 if __name__ == '__main__':
