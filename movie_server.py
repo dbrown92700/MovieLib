@@ -27,6 +27,7 @@ def database():
     return db
 
 
+
 @app.route('/')
 def list_movies():
 
