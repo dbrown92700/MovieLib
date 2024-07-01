@@ -1,0 +1,12 @@
+#!/usr/bin/python3
+
+import sys
+import os
+sys.path.insert(0, '/var/www/MovieLib')
+sys.path.insert(0, '/var/www/MovieLib/.venv/lib/python3.11/site-packages')
+# Script Env variables
+os.environ['DB_USER'] = 'your_db_user'
+os.environ['DB_PASS'] = 'your_db_password'
+os.environ['MOVIE_DB'] = 'movieLib'
+
+from movie_server import app as application
