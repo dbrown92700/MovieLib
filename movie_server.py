@@ -31,6 +31,7 @@ def database():
 def list_movies():
 
     db = database()
+    imdb_id = request.args.get('imdb_id') or ''
     genre = request.args.get('genre') or ''
     name = request.args.get('name') or ''
     page = int(request.args.get('page') or '1')
@@ -49,7 +50,7 @@ def list_movies():
     except KeyError:
         session['user'] = db.user = 'none'
 
-    movies, movie_count = db.movie_list(name=name, genre=genre, pagesize=pagesize, page=page,
+    movies, movie_count = db.movie_list(imdb_id=imdb_id, name=name, genre=genre, pagesize=pagesize, page=page,
                                         rating=rating, year=year, top250=top250,
                                         watched=watched, wants=wants,
                                         sort=sort, direction=direction)
