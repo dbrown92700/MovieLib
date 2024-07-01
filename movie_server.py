@@ -156,7 +156,7 @@ def edit_entry():
     movie_db, movie_count = db.movie_list(imdb_id=imdb_id)
     movie_data = db.db_to_dict(movie_db)[0]
     page = f'<html><body>Filename: {movie_data["file"]}<br>\n' \
-           f'<form action="/set_imdb">\n' \
+           f'<form action="/change_imdb">\n' \
            f'<input type="hidden" id="id" name="imdb_id" value="{imdb_id}">\n' \
            f'<input type="hidden" id="file" name="file" value="{movie_data["file"]}">\n' \
            f'<input type="hidden" id="dir" name="dir" value="{movie_data["directoryId"]}">\n' \
