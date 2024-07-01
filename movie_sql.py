@@ -150,7 +150,6 @@ class DataBase:
                    f'{filter_text} '
                    f'ORDER BY {sort} {direction} '
                    f'LIMIT {pagesize} OFFSET {(page-1) * pagesize};')
-        print(command)
         self.cursor.execute(command)
         movies = self.cursor.fetchall()
         self.cursor.execute(f'SELECT COUNT(*) FROM movies '

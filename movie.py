@@ -41,7 +41,7 @@ class Movie:
                 year = re.search(r'\d{4}', year).group(0)
             for x in ['_', '.']:
                 search_name = search_name.replace(x, ' ').rstrip(' ')
-            print(f'{search_name} {year}')
+            # print(f'{search_name} {year}')
             movie = imdb.search_movie(f'{search_name} {year}')
             num = 0
             while True:
@@ -49,7 +49,7 @@ class Movie:
                     raise FileNotFoundError('No movie found with this search')
                 self.imdb_id = movie[num].movieID
                 movie_detail = imdb.get_movie(self.imdb_id)
-                print(f"{movie_detail['title']} {movie_detail['year']} {movie_detail['kind']} {movie_detail.movieID}")
+                # print(f"{movie_detail['title']} {movie_detail['year']} {movie_detail['kind']} {movie_detail.movieID}")
                 if (movie_detail['kind'] in ['movie', 'tv movie']) and (str(movie_detail['year']) == year):
                     break
                 else:
