@@ -116,32 +116,31 @@ function set_user() {
                             <option value="ASC">Ascending</option>
                             <option value="DESC">Decending</option>
                         </select>
-                        <script type="text/javascript">
-                            // Persist search parameters
-                            const queryString = window.location.search;
-                            const urlParams = new URLSearchParams(queryString);
-                            const entries = urlParams.entries();
-                            var elements = ['sort', 'direction', 'name', 'rating', 'wants', 'watched', 'available', 'user'];
-                            for(const entry of entries) {
-                              for (var x=0; x<elements.length; x++) {
-                                if (entry[0] == elements[x]) {
-                                  var element = document.getElementById(elements[x]);
-                                  element.value = entry[1];
-                                }
-                              }
-                            }
-                        </script>
                     </td>
                 </tr>
                             <td width="200" align="center">
                                 <br><br><br><br>
-                <a href="{{app_url}}/search">Add a new movie</a>
             </td>
                 <tr></tr>
             </table>
             </td>
         </tr>
     </table>
+    <script type="text/javascript">
+        // Persist search parameters
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const entries = urlParams.entries();
+        var elements = ['sort', 'direction', 'name', 'rating', 'wants', 'watched', 'available', 'user'];
+        for(const entry of entries) {
+          for (var x=0; x<elements.length; x++) {
+            if (entry[0] == elements[x]) {
+              var element = document.getElementById(elements[x]);
+              element.value = entry[1];
+            }
+          }
+        }
+    </script>
 </form>
 <br>
 <table>
