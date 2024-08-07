@@ -230,7 +230,7 @@ def set_imdb():
     db_num = request.args.get('db')
     file = request.args.get('file')
     dir = request.args.get('dir')
-    imdb_id = request.args.get('imdb_id')
+    imdb_id = request.args.get('imdb_id').lstrip('t')
     movie = Movie(filename=file, directory=dir)
     movie.get_imdb(imdb_id=imdb_id.lstrip('t'))
     result = db.insert_movie(movie)

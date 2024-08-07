@@ -20,6 +20,9 @@ if __name__ == '__main__':
     db = DataBase(server='127.0.0.1', user=os.getenv('DB_USER'), password=os.getenv('DB_PASS'),
                   database=os.getenv('MOVIE_DB'))
     files = Files(root_dir)
+    if not files.dirs:
+        logger.error('ERROR: Drive Not Detected.  Exiting scanner.')
+        exit()
     delta = files.delta(db.files())
     logger.info('--------------------SCANNING FILES-------------')
     file_errors = {}

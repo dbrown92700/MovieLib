@@ -150,7 +150,7 @@ class DataBase:
         command = (f'SELECT movies.* FROM movies '
                    f'{join_text} '
                    f'{filter_text} '
-                   f'ORDER BY {sort} {direction} '
+                   f'ORDER BY movies.{sort} {direction}, movies.title ASC '
                    f'LIMIT {pagesize} OFFSET {(page-1) * pagesize};')
         self.cursor.execute(command)
         movies = self.cursor.fetchall()
