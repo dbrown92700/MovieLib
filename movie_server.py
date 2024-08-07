@@ -40,7 +40,6 @@ def list_movies():
     top250 = request.args.get('top250') or False
     watched = request.args.get('watched') or ''
     wants = request.args.get('wants') or ''
-    available = request.args.get('available') or ''
     pagesize = int(request.args.get('pagesize') or '10')
     sort = request.args.get('sort') or 'title'
     direction = request.args.get('direction') or 'ASC'
