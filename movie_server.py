@@ -101,7 +101,8 @@ def list_movies():
     top250_radio = f'<input type="radio" name="top250" value="True" {"checked" if top250=="True" else ""}>'
 
     url = (f'{app_url}/?name={"+".join(name)}&genre={genre}&watched={watched}&wants={wants}&'
-           f'rating={rating}&top250={"True" if top250=="True" else ""}&sort={sort}&direction={direction}')
+           f'rating={rating}&top250={"True" if top250=="True" else ""}&sort={sort}&direction={direction}&'
+           f'pagesize={pagesize}')
     pages = (f'<td width="350" align="center">Movies {(page-1) * pagesize + 1}-{min(page*pagesize, movie_count)} of '
              f'{movie_count} movies</td>\n'
              f'<td width="350" align="center">')
@@ -110,7 +111,7 @@ def list_movies():
     else:
         pages += f'<a href="{url}&page={page-1}">prev<<< </a>'
     pages += f' <b>Page {page}</b> '
-    if movie_count > page*10:
+    if movie_count > page*pagesize:
         pages += f'<a href="{url}&page={page+1}"> >>>next</a></td>\n'
     else:
         pages += '>>>next</td>\n'
