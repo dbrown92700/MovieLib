@@ -157,7 +157,7 @@ def edit_entry():
     movie_data = db.db_to_dict(movie_db)[0]
     page = f'<html><body>Filename: {movie_data["file"]}<br>\n' \
            f'<form action="/change_imdb">\n' \
-           f'<input type="hidden" id="id" name="imdb_id" value="{imdb_id}">\n' \
+           f'<input type="hidden" id="imdb_id" name="imdb_id" value="{imdb_id}">\n' \
            f'<input type="hidden" id="file" name="file" value="{movie_data["file"]}">\n' \
            f'<input type="hidden" id="dir" name="dir" value="{movie_data["directoryId"]}">\n' \
            f'<input type="text" name="new_id" value="{imdb_id}"><input type="submit" value="Change IMDB ID"></form>' \
@@ -168,7 +168,7 @@ def edit_entry():
 
 @app.route('/change_imdb')
 def change_imdb():
-    imdb_id = request.args.get('id')
+    imdb_id = request.args.get('imdb_id')
     new_id = request.args.get('new_id')
     file = request.args.get('file')
     directory = request.args.get('dir')
