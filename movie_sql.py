@@ -111,6 +111,7 @@ class DataBase:
             imdb_id = self.cursor.fetchall()[0][0]
         self.cursor.execute(f'DELETE FROM movie_genres WHERE movieID="{imdb_id}";')
         self.cursor.execute(f'DELETE FROM movies WHERE movieID="{imdb_id}";')
+        self.cnx.commit()
         logger.info(f'File Deleted: Removed {file} from database')
 
     def movie_list(self, imdb_id='', name='', genre='', rating=-1.1, year=0, top250=False, page=1, pagesize=10,
