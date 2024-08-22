@@ -160,7 +160,8 @@ def edit_entry():
            f'<input type="hidden" id="imdb_id" name="imdb_id" value="{imdb_id}">\n' \
            f'<input type="hidden" id="file" name="file" value="{movie_data["file"]}">\n' \
            f'<input type="hidden" id="dir" name="dir" value="{movie_data["directoryId"]}">\n' \
-           f'<input type="text" name="new_id" value="{imdb_id}"><input type="submit" value="Change IMDB ID"></form>' \
+           f'<input type="text" name="new_id" value="{imdb_id}"><input type="submit" value="Change IMDB ID"></form>\n' \
+           f'<br><br><a href="/delete?imdb_id={imdb_id}">Delete Entry</a>\n' \
            f'</html></body>'
 
     return Markup(page)
@@ -182,6 +183,12 @@ def change_imdb():
     else:
         db.delete(imdb_id=int(imdb_id))
         return redirect(f'/?imdb_id={new_id.lstrip("t")}')
+
+@app.route('/delete')
+def delete_movie():
+    imdb_id = request.args.get('imdb_id')
+    db.delete(imdb_id=int(imdb_id))
+    return redirect('/')
 
 
 @app.route('/user')
