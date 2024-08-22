@@ -186,6 +186,7 @@ def change_imdb():
 
 @app.route('/delete')
 def delete_movie():
+    db=database()
     imdb_id = request.args.get('imdb_id')
     db.delete(imdb_id=int(imdb_id))
     return redirect('/')
