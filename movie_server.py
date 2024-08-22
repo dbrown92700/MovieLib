@@ -173,7 +173,7 @@ def change_imdb():
     file = request.args.get('file')
     directory = request.args.get('dir')
     new_movie = Movie(filename=file, directory=directory)
-    new_movie.get_imdb(imdb_id=new_id)
+    new_movie.get_imdb(imdb_id=int(new_id.lstrip('t')))
     db = database()
     result = db.insert_movie(new_movie)
     if result['status'] == 'duplicate':
