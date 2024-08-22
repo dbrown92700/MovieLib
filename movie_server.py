@@ -181,7 +181,7 @@ def change_imdb():
                       f'<a href="/">Movie List</a>\n</html>')
     else:
         db.delete(imdb_id=imdb_id)
-        return redirect('/')
+        return redirect(f'/?imdb_id={new_id.lstrip("t")}')
 
 
 @app.route('/user')
