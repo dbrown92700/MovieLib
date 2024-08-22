@@ -180,7 +180,7 @@ def change_imdb():
         return Markup(f'<html>New IMDB ({new_id}) already exists in database. Entry not changed.<br>\n'
                       f'<a href="/">Movie List</a>\n</html>')
     else:
-        db.delete(imdb_id=imdb_id)
+        db.delete(imdb_id=int(imdb_id))
         return redirect(f'/?imdb_id={new_id.lstrip("t")}')
 
 
