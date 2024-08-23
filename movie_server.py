@@ -3,9 +3,6 @@
 __author__ = "David Brown <dbrown92700@gmail.com>"
 __contributors__ = []
 
-from crypt import methods
-
-import requests
 from flask import Flask, request, render_template, redirect, session
 from markupsafe import Markup
 import os
@@ -172,7 +169,7 @@ def edit_entry():
         if genre in db.movie_genres(imdb_id):
             checked = " checked"
         page += f'<input type="checkbox" id="{genre}" name="{genre}" value="{genre}"{checked}>{genre}<br>\n'
-    page += f'</form></html></body>'
+    page += f'New Genre: <input id="New" name="New"><br>\n</form></html></body>'
 
     return Markup(page)
 
@@ -203,6 +200,7 @@ def delete_movie():
 
 @app.route('/change_genres', methods=['POST'])
 def change_genres():
+    text = str(request.form) + '\n' + str(request.form.values())
     return Markup(request.form)
 
 @app.route('/user')

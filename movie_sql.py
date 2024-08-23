@@ -94,15 +94,33 @@ class DataBase:
                   f'"{plot}", "{movie.imdb_data["top250"]}", "{movie.imdb_data["cover url"]}");'
         self.cursor.execute(command)
         self.cnx.commit()
-        for genre in movie.imdb_data['genres']:
-            if genre not in self.genre_dict:
-                self.add_genre(genre)
-            command = f'INSERT INTO movie_genres (movieId, genreId) VALUES ("{movie.imdb_id}", {self.genre_dict[genre]});'
-            self.cursor.execute(command)
-            self.cnx.commit()
+        self.genres_update(movie_id=movie.imdb_id, genres=movie.imdb_data['genres'])
+        # for genre in movie.imdb_data['genres']:
+        #     if genre not in self.genre_dict:
+        #         self.add_genre(genre)
+        #     command = f'INSERT INTO movie_genres (movieId, genreId) VALUES ("{movie.imdb_id}", {self.genre_dict[genre]});'
+        #     self.cursor.execute(command)
+        #     self.cnx.commit()
         logger.info(f'File Added: {movie.filename} : {movie.imdb_data["title"]}')
 
         return {'status': 'success'}
+
+    def genres_update(self, movie_id, genres):
+        in_db = self.movie_genres(movie_id=movie_id)
+        for genre in genres:
+            if genre not in self.genre_dict:
+                self.add_genre(genre)
+            if genre not in in_db:
+                command = (f'INSERT INTO movie_genres (movieId, genreId) VALUES '
+                           f'("{movie_id}", {self.genre_dict[genre]});')
+                self.cursor.execute(command)
+                self.cnx.commit()
+        for genre in in_db:
+            if genre not in genres:
+                command = f'DELETE FROM movie_genres WHERE movieId={movie_id} AND genreId={self.genre_dict[genre]};'
+                self.cursor.execute(command)
+                self.cnx.commit()
+
 
     def delete(self, imdb_id='', file=''):
 
