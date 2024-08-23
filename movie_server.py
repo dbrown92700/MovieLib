@@ -199,6 +199,9 @@ def delete_movie():
     db.delete(imdb_id=int(imdb_id))
     return redirect('/')
 
+@app.route('/change_genres')
+def change_genres():
+    return Markup(request.args)
 
 @app.route('/user')
 def get_user():
