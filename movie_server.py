@@ -155,14 +155,20 @@ def edit_entry():
     db = database()
     movie_db, movie_count = db.movie_list(imdb_id=imdb_id)
     movie_data = db.db_to_dict(movie_db)[0]
-    page = f'<html><body>Filename: {movie_data["file"]}<br>\n' \
+    page = f'<html><body><br><b>Filename: {movie_data["file"]}</b><br><br>\n' \
            f'<form action="/change_imdb">\n' \
            f'<input type="hidden" id="imdb_id" name="imdb_id" value="{imdb_id}">\n' \
            f'<input type="hidden" id="file" name="file" value="{movie_data["file"]}">\n' \
            f'<input type="hidden" id="dir" name="dir" value="{movie_data["directoryId"]}">\n' \
            f'<input type="text" name="new_id" value="{imdb_id}"><input type="submit" value="Change IMDB ID"></form>\n' \
-           f'<br><br><a href="/delete?imdb_id={imdb_id}">Delete Entry</a>\n' \
-           f'</html></body>'
+           f'<br><a href="/delete?imdb_id={imdb_id}">Delete Entry</a>\n' \
+           f'<form action="/change_genres">\n'
+    for genre in db.genre_dict:
+        checked = ""
+        if db.genre_dict[genre] in db.movie_genres(imdb_id):
+            selected = " checked"
+        page += f'<input type="" id="{genre}" name="{genre}" value="{genre}" {checked}>{genre}<br>\n'
+    page += f'</form></html></body>'
 
     return Markup(page)
 
