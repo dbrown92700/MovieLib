@@ -163,9 +163,10 @@ def edit_entry():
            f'<input type="text" name="new_id" value="{imdb_id}"><input type="submit" value="Change IMDB ID"></form>\n' \
            f'<br><a href="/delete?imdb_id={imdb_id}">Delete Entry</a>\n' \
            f'<form action="/change_genres">\n'
+
     for genre in db.genre_dict:
         checked = ""
-        if db.genre_dict[genre] in db.movie_genres(imdb_id):
+        if genre in db.movie_genres(imdb_id):
             selected = " checked"
         page += f'<input type="checkbox" id="{genre}" name="{genre}" value="{genre}" {checked}>{genre}<br>\n'
     page += f'</form></html></body>'
