@@ -154,23 +154,23 @@ def edit_entry():
     db = database()
     movie_db, movie_count = db.movie_list(imdb_id=imdb_id)
     movie_data = db.db_to_dict(movie_db)[0]
-    page = f'<html><body><br><b>Filename: {movie_data["file"]}</b><br><br>\n' \
-           f'<form action="/change_imdb">\n' \
-           f'<input type="hidden" id="imdb_id" name="imdb_id" value="{imdb_id}">\n' \
+    page = f'<html><body><br><h1>Filename: {movie_data["file"]}</h1><br><br>\n' \
+           f'<table><tr><td><form action="/change_imdb"><input type="submit" value="Change IMDB ID"></td>\n' \
+           f'<td><input type="hidden" id="imdb_id" name="imdb_id" value="{imdb_id}">\n' \
            f'<input type="hidden" id="file" name="file" value="{movie_data["file"]}">\n' \
            f'<input type="hidden" id="dir" name="dir" value="{movie_data["directoryId"]}">\n' \
-           f'<input type="text" name="new_id" value="{imdb_id}"><input type="submit" value="Change IMDB ID"></form>\n' \
-           f'<br><a href="/delete?imdb_id={imdb_id}">Delete Entry</a>\n' \
-           f'<br><br><form action="/change_genres" method="post">\n' \
-           f'<input type="submit" value="Modify Genres"><br>\n' \
-           f'<input type="hidden" id="imdb_id" name="imdb_id" value="{imdb_id}">\n'
+           f'<input type="text" name="new_id" value="{imdb_id}"></form></td></tr>\n' \
+           f'<tr><td><form action="/delete?imdb_id={imdb_id}"><input type="submit" value="Delete Entry"></td></tr>\n' \
+           f'<tr><td><form action="/change_genres" method="post">\n' \
+           f'<input type="submit" value="Modify Genres"></td>\n' \
+           f'<td><input type="hidden" id="imdb_id" name="imdb_id" value="{imdb_id}">\n'
 
     for genre in db.genre_dict:
         checked = ""
         if genre in db.movie_genres(imdb_id):
             checked = " checked"
         page += f'<input type="checkbox" id="{genre}" name="{genre}" value="{genre}"{checked}>{genre}<br>\n'
-    page += f'New Genre: <input id="New" name="New"><br>\n</form></html></body>'
+    page += f'New Genre: <input id="New" name="New"><br>\n</form></td></tr></table></html></body>'
 
     return Markup(page)
 
