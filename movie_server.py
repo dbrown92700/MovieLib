@@ -162,7 +162,8 @@ def edit_entry():
            f'<input type="text" name="new_id" value="{imdb_id}"><input type="submit" value="Change IMDB ID"></form>\n' \
            f'<br><a href="/delete?imdb_id={imdb_id}">Delete Entry</a>\n' \
            f'<br><br><form action="/change_genres" method="post">\n' \
-           f'<input type="submit" value="Modify Genres"><br>\n'
+           f'<input type="submit" value="Modify Genres"><br>\n' \
+           f'<input type="hidden" id="imdb_id" name="imdb_id" value="{imdb_id}">\n'
 
     for genre in db.genre_dict:
         checked = ""
@@ -200,8 +201,17 @@ def delete_movie():
 
 @app.route('/change_genres', methods=['POST'])
 def change_genres():
-    text = str(request.form) + '\n' + str(dict(request.form).values())
-    return Markup(text)
+    db = database()
+    imdb_id = request.form.get('imdb_id')
+    genres = list(dict(request.form).values())
+    genres.remove(imdb_id)
+    try:
+        genres.remove('')
+    except ValueError:
+        genres = list(set(genres))
+    db.genres_update(movie_id=imdb_id, genres=genres)
+
+    return redirect(f'/?imdb_id={imdb_id}')
 
 @app.route('/user')
 def get_user():
