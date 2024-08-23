@@ -167,6 +167,7 @@ def edit_entry():
             f'</form></tr>\n'
             f'<tr><form action="/delete?imdb_id={imdb_id}">\n'
             f'<td><input type="submit" value="Delete Entry"></td>'
+            f'<td><input type="hidden"id="imdb_id" name="imdb_id" value="{imdb_id}"></td>\n'
             f'</form></tr>\n'
             f'<tr style="vertical-align:top;"><form action="/change_genres" method="post">\n'
             f'<td><input type="submit" value="Modify Genres"></td>\n'
