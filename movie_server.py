@@ -200,7 +200,7 @@ def delete_movie():
 
 @app.route('/change_genres', methods=['POST'])
 def change_genres():
-    text = str(request.form) + '\n' + str(request.form.values())
+    text = str(request.form) + '\n' + str(dict(request.form).values())
     return Markup(text)
 
 @app.route('/user')
