@@ -165,10 +165,10 @@ def edit_entry():
             f'<input type="hidden" id="dir" name="dir" value="{movie_data["directoryId"]}">\n'
             f'<input type="text" name="new_id" value="{imdb_id}"></td>'
             f'</form></tr>\n'
-            f'<tr><td>\n'
-            f'<form action="/delete?imdb_id={imdb_id}"><input type="submit" value="Delete Entry"></form>\n'
-            f'</td></tr>\n'
-            f'<tr><form action="/change_genres" method="post">\n'
+            f'<tr><form action="/delete?imdb_id={imdb_id}">\n'
+            f'<td><input type="submit" value="Delete Entry"></td>'
+            f'</form></tr>\n'
+            f'<tr style="vertical-align:top;"><form action="/change_genres" method="post">\n'
             f'<td><input type="submit" value="Modify Genres"></td>\n'
             f'<td><input type="hidden" id="imdb_id" name="imdb_id" value="{imdb_id}">\n')
 
