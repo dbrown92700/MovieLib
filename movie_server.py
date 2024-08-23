@@ -204,7 +204,7 @@ def change_imdb():
 def delete_movie():
     db=database()
     imdb_id = request.args.get('imdb_id')
-    db.delete(imdb_id=int(imdb_id))
+    db.delete(imdb_id=imdb_id)
     return redirect('/')
 
 @app.route('/change_genres', methods=['POST'])
