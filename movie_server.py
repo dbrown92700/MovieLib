@@ -203,7 +203,7 @@ def delete_movie():
 
 @app.route('/change_genres', methods=['POST'])
 def change_genres():
-    return Markup(request.args)
+    return Markup(request.form)
 
 @app.route('/user')
 def get_user():
