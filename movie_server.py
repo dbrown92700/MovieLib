@@ -3,6 +3,8 @@
 __author__ = "David Brown <dbrown92700@gmail.com>"
 __contributors__ = []
 
+from crypt import methods
+
 import requests
 from flask import Flask, request, render_template, redirect, session
 from markupsafe import Markup
@@ -162,7 +164,7 @@ def edit_entry():
            f'<input type="hidden" id="dir" name="dir" value="{movie_data["directoryId"]}">\n' \
            f'<input type="text" name="new_id" value="{imdb_id}"><input type="submit" value="Change IMDB ID"></form>\n' \
            f'<br><a href="/delete?imdb_id={imdb_id}">Delete Entry</a>\n' \
-           f'<br><br><form action="/change_genres">\n' \
+           f'<br><br><form action="/change_genres" method="post">\n' \
            f'<input type="submit" value="Modify Genres"><br>\n'
 
     for genre in db.genre_dict:
@@ -199,7 +201,7 @@ def delete_movie():
     db.delete(imdb_id=int(imdb_id))
     return redirect('/')
 
-@app.route('/change_genres')
+@app.route('/change_genres', methods=['POST'])
 def change_genres():
     return Markup(request.args)
 
