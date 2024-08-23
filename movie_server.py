@@ -162,7 +162,7 @@ def edit_entry():
            f'<input type="hidden" id="dir" name="dir" value="{movie_data["directoryId"]}">\n' \
            f'<input type="text" name="new_id" value="{imdb_id}"><input type="submit" value="Change IMDB ID"></form>\n' \
            f'<br><a href="/delete?imdb_id={imdb_id}">Delete Entry</a>\n' \
-           f'<form action="/change_genres">\n'
+           f'<br>Modify Genres:<br>\n<form action="/change_genres">\n'
 
     for genre in db.genre_dict:
         checked = ""
