@@ -36,6 +36,14 @@
 > cd /var/www/MovieLib\
 > sudo ln -s /home/db/Documents/MovieLib/movie_server.py movie_server.py\
 > sudo ln -s /home/db/Documents/MovieLib/static static\
-> sudo ln -s /home/db/Documents/MovieLib/templates templates
+> sudo ln -s /home/db/Documents/MovieLib/templates templates\
+> sudo ln -s /home/db/Documents/MovieLib/venv/lib/python3.12/site-packages/ site-packages
 - Link the apache site file and enable the site
-> 
+> cd /etc/apache2/sites-available\
+> sudo ln -s /home/db/Documents/MovieLib/movielib-site.conf\
+> sudo apt install libapache2-mod-wsgi-py3\
+> sudo a2enmod wsgi
+- If using a port other than 80, modify ports.conf to include Listen command
+> nano /etc/apache2/ports.conf
+- Allow execution on the parent directory of MovieLib 
+> chmod +x /home/db
