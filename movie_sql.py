@@ -273,12 +273,15 @@ class DataBase:
 
         return [m[0] for m in movies]
 
-    def update_dir(self, directory: str, imdb_id='', file=''):
+    def update_dir(self, directory='', imdb_id='', file='', new_file=''):
 
         if file and not imdb_id:
             self.cursor.execute(f'SELECT movieID FROM movies WHERE file="{file}";')
             imdb_id = self.cursor.fetchall()[0][0]
-        self.cursor.execute(f'UPDATE movies SET directoryId="{directory}" WHERE movieId="{imdb_id}";')
+        if directory:
+            self.cursor.execute(f'UPDATE movies SET directoryId="{directory}" WHERE movieId="{imdb_id}";')
+        if new_file:
+            self.cursor.execute(f'UPDATE movies SET file="{new_file}" WHERE movieId="{imdb_id}";')
         logger.info(f'File Moved: {file} moved to directory {directory}')
 
     def update_file_errors(self, files: dict):

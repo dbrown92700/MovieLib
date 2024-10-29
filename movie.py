@@ -30,7 +30,7 @@ class Movie:
             year = ''
             for x in movie_suffixes:
                 search_name = search_name.removesuffix(x)
-            for regex in ['(.+)(\(\d{4}\)$)', '(.+)(\[\d{4}\]$)', '(.+)(\d{4}$)']:
+            for regex in ['(.+)(\\(\\d{4}\\)$)', '(.+)(\\[\\d{4}\\]$)', '(.+)(\\d{4}$)']:
                 try:
                     search_name, year = re.search(regex, search_name).groups()
                 except AttributeError:
@@ -49,7 +49,7 @@ class Movie:
                 self.imdb_id = movie[num].movieID
                 movie_detail = imdb.get_movie(self.imdb_id)
                 print(f"{movie_detail['title']} {movie_detail['kind']} {movie_detail['year']}")
-                if ((movie_detail['kind'] in ['movie', 'tv movie', 'video movie']) and
+                if ((movie_detail['kind'] in ['movie', 'tv movie', 'video movie', 'tv mini series']) and
                         (str(movie_detail['year']) == year)):
                     break
                 else:

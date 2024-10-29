@@ -45,6 +45,8 @@ if __name__ == '__main__':
                 logger.info(f'File Ignored: Not a movie extension {directory}/{file}')
         elif delta[file]['action'] == 'removed':
             db.delete(file=file)
-        else:
+            logger.info(f'File Deleted: Missing from drive {directory}/{file}')
+        elif delta[file]['action'] == 'moved':
             db.update_dir(directory=directory, file=file)
+            logger.info(f'File Moved: Database Updated {directory}/{file}')
     db.update_file_errors(file_errors)
