@@ -3,6 +3,8 @@
 __author__ = "David Brown <dbrown92700@gmail.com>"
 __contributors__ = []
 
+from datetime import datetime
+
 from flask import Flask, request, render_template, redirect, session
 from markupsafe import Markup
 import os
@@ -60,11 +62,21 @@ def list_movies():
             rank = f'<br>#{movie["top250rank"]}'
         else:
             rank = ''
+        if movie['dateAdded']:
+            da = datetime.fromtimestamp(movie['dateAdded'])
+            date_added = f'{da.year}/{da.month}/{da.day}'
+        else:
+            date_added = 'UNK'
+        run_time = 'UNK'
+        if movie['runTime'] and movie['runTime'] < 999:
+                run_time = f'{int(movie["runTime"] / 60)}:{movie["runTime"] % 60:02}'
         movie_table += (f'<tr>\n'
                         f'<td width=200>'
                         f'<a href="https://imdb.com/title/tt{movie["imdb_id"]}/" target="_imdb">'
                         f'{movie["title"]}</a><br>\n'
-                        f'{movie["year"]}\n'
+                        f'{movie["year"]}<br>\n'
+                        f'Runtime: {run_time}<br>\n'
+                        f'Added: {date_added}\n'
                         f'<br><br><div align=center><a href="{app_url}/edit?id={movie["imdb_id"]}">Edit</a>'
                         f'</div></td>\n'
                         f'<td width=90 align=left><img src="{movie["coverUrl"]}" height=120 width=80></td>\n'

@@ -1,5 +1,6 @@
 import mysql.connector
 from movie import Movie
+import os
 import logging
 logger = logging.getLogger(__name__)
 
@@ -18,6 +19,8 @@ movie_table = ('(movieId nchar(20) NOT NULL,'
                ' plot varchar(1000),'
                ' top250rank smallint,'
                ' coverUrl nchar(255),'
+               ' dateAdded int,'
+               ' runTime smallint,'
                ' PRIMARY KEY (movieId)'
                ')')
 genre_table = ('(genreId smallint NOT NULL AUTO_INCREMENT,'
@@ -93,10 +96,12 @@ class DataBase:
                         f'   Database: {found_movie["directoryId"]}/{found_movie["file"]}')
             return {'status': 'duplicate'}
         plot = movie.imdb_data['plot'][0].replace('"', "'")
-        command = f'INSERT INTO movies (movieId, file, directoryId, title, year, rating, plot, top250rank, coverUrl) ' \
-                  f'VALUES ("{movie.imdb_id}", "{movie.filename}", "{movie.directory}", ' \
-                  f'"{movie.imdb_data["title"]}", "{movie.imdb_data["year"]}", "{movie.imdb_data["rating"]}", ' \
-                  f'"{plot}", "{movie.imdb_data["top250"]}", "{movie.imdb_data["cover url"]}");'
+        date_added = os.path.getctime(f'{movie.directory}/{movie.filename}')
+        command = (f'INSERT INTO movies (movieId, file, directoryId, title, year, rating, plot, top250rank, coverUrl, '
+                   f'dateAdded, runTime) VALUES ("{movie.imdb_id}", "{movie.filename}", "{movie.directory}", '
+                   f'"{movie.imdb_data["title"]}", "{movie.imdb_data["year"]}", "{movie.imdb_data["rating"]}", '
+                   f'"{plot}", "{movie.imdb_data["top250"]}", "{movie.imdb_data["cover url"]}",'
+                   f'"{int(date_added)}", "{movie.imdb_data["runtimes"][0]}");')
         self.cursor.execute(command)
         self.cnx.commit()
         self.genres_update(movie_id=movie.imdb_id, genres=movie.imdb_data['genres'])
@@ -135,6 +140,7 @@ class DataBase:
                    sort='title', direction='ASC', watched='', wants='', file=''):
         # Returns a list of movies using the filters specified and the count of movies in the form
         # ([(movie1),(movie2)], count)
+        # if pagesize=0, it returns all entries
 
         movie_filter = []
         if imdb_id:
@@ -165,11 +171,15 @@ class DataBase:
         if genre:
             join_text = (f'JOIN movie_genres ON (movie_genres.movieId = movies.movieId) '
                          f'JOIN genres ON (genres.genreId = movie_genres.genreId) ')
+        if pagesize==0:
+            limit = ''
+        else:
+            limit = f'LIMIT {pagesize} OFFSET {(page-1) * pagesize}'
         command = (f'SELECT movies.* FROM movies '
                    f'{join_text} '
                    f'{filter_text} '
                    f'ORDER BY movies.{sort} {direction}, movies.title ASC '
-                   f'LIMIT {pagesize} OFFSET {(page-1) * pagesize};')
+                   f'{limit};')
         self.cursor.execute(command)
         movies = self.cursor.fetchall()
         self.cursor.execute(f'SELECT COUNT(*) FROM movies '
@@ -219,6 +229,8 @@ class DataBase:
                 'plot': movie[6],
                 'top250rank': movie[7],
                 'coverUrl': movie[8],
+                'dateAdded': movie[9],
+                'runTime': movie[10],
                 'genres': self.movie_genres(movie[0])
             }
             dict_list.append(movie_dict)
@@ -301,4 +313,8 @@ class DataBase:
     def file_error_remove(self, file_num: int):
 
         self.cursor.execute(f'DELETE FROM file_errors WHERE fileId={file_num};')
+
+    def update_movie(self, imdb_id, column, value):
+
+        self.cursor.execute(f'UPDATE movies SET {column}="{value}" WHERE movieId="{imdb_id}";')
 

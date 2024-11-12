@@ -5,7 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 movie_suffixes = ['.mkv', '.mp4', '.avi', 'm4v']
-imdb_detail = ['title', 'year', 'rating', 'plot', 'genres', 'cover url']
+imdb_detail = ['title', 'year', 'rating', 'plot', 'genres', 'cover url', 'runtimes']
 
 
 class Movie:
