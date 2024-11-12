@@ -4,6 +4,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+# NOTES:
+# os.path.getctime(path)  ... 1727875564.78
+# datetime.fromtimestamp(epoch) = datetime.datetime(2017, 1, 22, 2, 47, 52) = 2017-01-22 02:47:52
+# imdb.data['runtimes'][0] ... ['136']
+
 movie_table = ('(movieId nchar(20) NOT NULL,'
                ' file nchar(255) NOT NULL,'
                ' directoryId nchar(255) NOT NULL,'
@@ -95,12 +100,6 @@ class DataBase:
         self.cursor.execute(command)
         self.cnx.commit()
         self.genres_update(movie_id=movie.imdb_id, genres=movie.imdb_data['genres'])
-        # for genre in movie.imdb_data['genres']:
-        #     if genre not in self.genre_dict:
-        #         self.add_genre(genre)
-        #     command = f'INSERT INTO movie_genres (movieId, genreId) VALUES ("{movie.imdb_id}", {self.genre_dict[genre]});'
-        #     self.cursor.execute(command)
-        #     self.cnx.commit()
         logger.info(f'File Added: {movie.filename} : {movie.imdb_data["title"]}')
 
         return {'status': 'success'}

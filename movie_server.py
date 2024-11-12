@@ -56,6 +56,10 @@ def list_movies():
 
     movie_table = ''
     for movie in match_list:
+        if movie['top250rank'] < 900:
+            rank = f'<br>#{movie["top250rank"]}'
+        else:
+            rank = ''
         movie_table += (f'<tr>\n'
                         f'<td width=200>'
                         f'<a href="https://imdb.com/title/tt{movie["imdb_id"]}/" target="_imdb">'
@@ -64,7 +68,7 @@ def list_movies():
                         f'<br><br><div align=center><a href="{app_url}/edit?id={movie["imdb_id"]}">Edit</a>'
                         f'</div></td>\n'
                         f'<td width=90 align=left><img src="{movie["coverUrl"]}" height=120 width=80></td>\n'
-                        f'<td width=30>{movie["rating"]}</td>\n'
+                        f'<td width=30>{movie["rating"]}{rank}</td>\n'
                         f'<td width=300 style="padding-right: 5px">\n'
                         f'<div style="height:120px;width:290px;overflow:auto;">'
                         f'{movie["plot"]}</td>\n<td width=120>')
@@ -173,7 +177,9 @@ def edit_entry():
             f'<td><input type="submit" value="Modify Genres"></td>\n'
             f'<td><input type="hidden" id="imdb_id" name="imdb_id" value="{imdb_id}">\n')
 
-    for genre in db.genre_dict:
+    genres = list(db.genre_dict.keys())
+    genres.sort()
+    for genre in genres:
         checked = ""
         if genre in db.movie_genres(imdb_id):
             checked = " checked"
@@ -190,14 +196,14 @@ def change_imdb():
     file = request.args.get('file')
     directory = request.args.get('dir')
     new_movie = Movie(filename=file, directory=directory)
-    new_movie.get_imdb(imdb_id=int(new_id.lstrip('t')))
+    new_movie.get_imdb(imdb_id=new_id.lstrip('t'))
     db = database()
     result = db.insert_movie(new_movie)
     if result['status'] == 'duplicate':
         return Markup(f'<html>New IMDB ({new_id}) already exists in database. Entry not changed.<br>\n'
                       f'<a href="/">Movie List</a>\n</html>')
     else:
-        db.delete(imdb_id=int(imdb_id))
+        db.delete(imdb_id=imdb_id)
         return redirect(f'/?imdb_id={new_id.lstrip("t")}')
 
 @app.route('/delete')
