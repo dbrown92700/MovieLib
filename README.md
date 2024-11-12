@@ -28,6 +28,7 @@
 > export SERVER_IP='127.0.0.1'\
 > export SERVER_PORT='8111'\
 > export MOVIE_ROOT='/home/db/MovieDirectory'\
+> export LOG_DIR='/home/db/Documents/MovieLib'\
 > export MOVIE_DB='movieLib'\
 > export SCRIPT_NAME=''
 - Create a movie_server.wsgi file using the example and edit the environment variables appropriately
@@ -35,9 +36,12 @@
 > sudo mkdir /var/www/MovieLib\
 > cd /var/www/MovieLib\
 > sudo ln -s /home/db/Documents/MovieLib/movie_server.py movie_server.py\
+> sudo ln -s /home/db/Documents/MovieLib/movie.py movie.py\
+> sudo ln -s /home/db/Documents/MovieLib/movie_sql.py movie_sql.py\
 > sudo ln -s /home/db/Documents/MovieLib/static static\
 > sudo ln -s /home/db/Documents/MovieLib/templates templates\
-> sudo ln -s /home/db/Documents/MovieLib/venv/lib/python3.12/site-packages/ site-packages
+> sudo ln -s /home/db/Documents/MovieLib/venv/lib/python3.12/site-packages/ site-packages \
+> sudo ln -s /home/db/Documents/MovieLib/movie_server.wsgi movie_server.wsgi
 - Link the apache site file and enable the site
 > cd /etc/apache2/sites-available\
 > sudo ln -s /home/db/Documents/MovieLib/movielib-site.conf\
@@ -47,3 +51,11 @@
 > nano /etc/apache2/ports.conf
 - Allow execution on the parent directory of MovieLib 
 > chmod +x /home/db
+- Double check site-packages path in movie-server.wsgi
+> nano /var/www/MovieLib/movie-server.wsgi
+- Disable default and and enable Movie site on Apache
+> sudo a2ensite movielib-site.conf \
+> sudo a2dissite 000-default.conf \
+> sudo systemctl reload apache2.service
+- Kick off the first file scan to populate the database
+> ./filescan.sh
