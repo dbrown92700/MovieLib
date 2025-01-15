@@ -118,7 +118,7 @@ def list_movies():
 
     url = (f'{app_url}/?name={"+".join(name)}&genre={genre}&watched={watched}&wants={wants}&'
            f'rating={rating}&top250={"True" if top250=="True" else ""}&sort={sort}&direction={direction}&'
-           f'pagesize={pagesize}')
+           f'pagesize={pagesize}&length={length}')
     pages = (f'<td width="350" align="center">Movies {(page-1) * pagesize + 1}-{min(page*pagesize, movie_count)} of '
              f'{movie_count} movies</td>\n'
              f'<td width="350" align="center">')
