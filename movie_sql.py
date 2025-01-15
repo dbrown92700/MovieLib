@@ -136,8 +136,8 @@ class DataBase:
         self.cnx.commit()
         logger.info(f'File Deleted: Removed {imdb_id} from database')
 
-    def movie_list(self, imdb_id='', name='', genre='', rating=-1.1, year=0, top250=False, page=1, pagesize=10,
-                   sort='title', direction='ASC', watched='', wants='', file=''):
+    def movie_list(self, imdb_id='', name='', genre='', rating=-1.1, year=0, top250=False, length=0,
+                   page=1, pagesize=10, sort='title', direction='ASC', watched='', wants='', file=''):
         # Returns a list of movies using the filters specified and the count of movies in the form
         # ([(movie1),(movie2)], count)
         # if pagesize=0, it returns all entries
@@ -151,6 +151,8 @@ class DataBase:
             movie_filter.append(f'movies.rating>={rating}')
         if year > 0:
             movie_filter.append(f'movies.year={year}')
+        if length > 0:
+            movie_filter.append(f'movies.runTime<={length}')
         if top250:
             movie_filter.append(f'movies.top250rank<300')
             sort = 'top250rank'
