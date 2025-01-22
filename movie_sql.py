@@ -96,7 +96,10 @@ class DataBase:
                         f'   Database: {found_movie["directoryId"]}/{found_movie["file"]}')
             return {'status': 'duplicate'}
         plot = movie.imdb_data['plot'][0].replace('"', "'")
-        date_added = os.path.getctime(f'{movie.directory}/{movie.filename}')
+        try:
+            date_added = os.path.getctime(f'{movie.directory}/{movie.filename}')
+        except PermissionError:
+            logger.error(f"File Permissions Error: {movie.directory}/{movie.filename}")
         command = (f'INSERT INTO movies (movieId, file, directoryId, title, year, rating, plot, top250rank, coverUrl, '
                    f'dateAdded, runTime) VALUES ("{movie.imdb_id}", "{movie.filename}", "{movie.directory}", '
                    f'"{movie.imdb_data["title"]}", "{movie.imdb_data["year"]}", "{movie.imdb_data["rating"]}", '
