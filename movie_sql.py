@@ -99,7 +99,7 @@ class DataBase:
             return {'status': 'duplicate'}
         plot = movie.imdb_data['plot'][0].replace('"', "'")
         try:
-            date_added = os.path.getctime(f'{movie.directory}/{movie.filename}')
+            date_added = os.path.getmtime(f'{movie.directory}/{movie.filename}')
         except PermissionError:
             logger.error(f"File Permissions Error getting create time. Using Now: {movie.directory}/{movie.filename}")
             date_added = datetime.datetime.now().timestamp()
