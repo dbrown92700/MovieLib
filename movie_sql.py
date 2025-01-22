@@ -101,8 +101,8 @@ class DataBase:
         try:
             date_added = os.path.getctime(f'{movie.directory}/{movie.filename}')
         except PermissionError:
-            logger.error(f"File Permissions Error getting create time. Using Now: {movie.directory}/{movie.filename}. ")
-            date_added = datetime.datetime.now()
+            logger.error(f"File Permissions Error getting create time. Using Now: {movie.directory}/{movie.filename}")
+            date_added = datetime.datetime.now().timestamp()
         command = (f'INSERT INTO movies (movieId, file, directoryId, title, year, rating, plot, top250rank, coverUrl, '
                    f'dateAdded, runTime) VALUES ("{movie.imdb_id}", "{movie.filename}", "{movie.directory}", '
                    f'"{movie.imdb_data["title"]}", "{movie.imdb_data["year"]}", "{movie.imdb_data["rating"]}", '
