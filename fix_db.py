@@ -5,7 +5,8 @@ from imdb import Cinemagoer
 import os
 from datetime import datetime
 
-db = DataBase('0.0.0.0', 'db', '10-9=One', 'movieLib2')
+db = DataBase(server='127.0.0.1', user=os.getenv('DB_USER'), password=os.getenv('DB_PASS'),
+              database=os.getenv('MOVIE_DB'))
 imdb = Cinemagoer()
 
 movies = db.db_to_dict(db.movie_list(pagesize=0)[0])
