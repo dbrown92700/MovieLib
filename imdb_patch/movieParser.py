@@ -380,18 +380,27 @@ class DOMHTMLMovieParser(DOMParserBase):
         Rule(
             key='genres',
             extractor=Path(
-                foreach='//td[starts-with(text(), "Genre")]/..//li/a',
+                foreach='//span[starts-with(text(), "Genre")]/..//li/a',
                 path='./text()'
             )
         ),
+        # New Runtimes Rule
         Rule(
             key='runtimes',
             extractor=Path(
-                foreach='//td[starts-with(text(), "Runtime")]/..//li',
+                foreach='//li[@id="runtime"]//span[@class="ipc-metadata-list-item__list-content-item--subText"]',
                 path='./text()',
-                transform=lambda x: x.strip().replace(' min', '')
+                transform=lambda x: x.strip('()').replace(' min', '')
             )
         ),
+        # Rule(
+        #     key='runtimes',
+        #     extractor=Path(
+        #         foreach='//td[starts-with(text(), "Runtime")]/..//li',
+        #         path='./text()',
+        #         transform=lambda x: x.strip().replace(' min', '')
+        #     )
+        # ),
         Rule(
             key='countries',
             extractor=Path(
@@ -540,10 +549,11 @@ class DOMHTMLMovieParser(DOMParserBase):
                 )
             )
         ),
+        # Fixed only for Top Rated (IMDB Top 250)
         Rule(
             key='top/bottom rank',
             extractor=Path(
-                '//li[@class="ipl-inline-list__item"]//a[starts-with(@href, "/chart/")]/text()'
+                '//li[@class="ipc-inline-list__item test-class-react"]//a[@class="ipc-link ipc-link--base top-rated-link"]/text()'
             )
         ),
         Rule(
@@ -682,9 +692,10 @@ class DOMHTMLMovieParser(DOMParserBase):
                 ]
             )
         ),
+        # Fixed for rating
         Rule(
             key='rating',
-            extractor=Path('(//span[@class="ipl-rating-star__rating"])[1]/text()')
+            extractor=Path('(//span[@class="ipc-rating-star--rating"])[1]/text()')
         ),
         Rule(
             key='votes',
@@ -692,7 +703,8 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
         Rule(
             key='cover url',
-            extractor=Path('//img[@alt="Poster"]/@src')
+            extractor=Path('//div[starts-with(@class, "ipc-poster ipc-poster--base ")]//img[@class="ipc-image"]/@src')
+            # //div[starts-with(@class, 'ipc-poster ipc-poster--base ')]
         ),
         Rule(
             key='imdbID',
@@ -791,8 +803,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             if nakas:
                 data['akas'] = nakas
         if 'runtimes' in data:
-            data['runtimes'] = [x.replace(' min', '')
-                                for x in data['runtimes']]
+            data['runtimes'] = [int(x) for x in data['runtimes']]
         if 'number of seasons' in data:
             data['seasons'] = [str(i) for i in range(1, data['number of seasons'] + 1)]
         if 'season/episode' in data:
@@ -814,13 +825,14 @@ class DOMHTMLMovieParser(DOMParserBase):
                 data[k] = data[t_k]
             del data[t_k]
         if 'top/bottom rank' in data:
+            print(data['top/bottom rank'])
             tbVal = data['top/bottom rank'].lower()
             if tbVal.startswith('top'):
                 tbKey = 'top 250 rank'
-                tbVal = _toInt(tbVal, [('top rated movies: #', '')])
+                tbVal = _toInt(tbVal, [('top rated movie #', '')])
             else:
                 tbKey = 'bottom 100 rank'
-                tbVal = _toInt(tbVal, [('bottom rated movies: #', '')])
+                tbVal = _toInt(tbVal, [('bottom rated movie #', '')])
             if tbVal:
                 data[tbKey] = tbVal
             del data['top/bottom rank']
