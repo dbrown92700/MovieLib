@@ -160,7 +160,7 @@ class DataBase:
         if length > 0:
             movie_filter.append(f'movies.runTime<={length}')
         if top250:
-            movie_filter.append(f'movies.top250rank<300')
+            movie_filter.append(f'movies.top250rank<900')
             sort = 'top250rank'
             direction = 'ASC'
         if genre:
