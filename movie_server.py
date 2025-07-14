@@ -59,7 +59,9 @@ def list_movies():
 
     movie_table = ''
     for movie in match_list:
-        if movie['top250rank'] < 900:
+        if movie['top250rank'] == 888:
+            rank = '<br>OFF'
+        elif movie['top250rank'] < 900:
             rank = f'<br>#{movie["top250rank"]}'
         else:
             rank = ''
