@@ -10,7 +10,7 @@ imdb_detail = ['title', 'year', 'rating', 'plot', 'genres', 'cover url', 'runtim
 
 class Movie:
 
-    def __init__(self, filename, directory):
+    def __init__(self, filename: str, directory):
 
         self.filename = filename
         self.directory = directory
