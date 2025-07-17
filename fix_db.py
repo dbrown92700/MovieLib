@@ -16,6 +16,7 @@ fix = input(f'1. Run Time\n'
             f'3. IMDB Rating\n'
             f'4. IMDB Top 250\n'
             f'?: ')
+print('\n\n')
 
 try:
     fix = int(fix)
@@ -55,7 +56,7 @@ if fix == 4:
 
 for n, movie in enumerate(movies):
 
-    print(f"{n:04} {movie['imdb_id']} {movie['title']}")
+    print(f"{n:04} {movie['imdb_id']} {movie['title']:80}", end='')
 
     if fix == 4:
 
@@ -64,10 +65,16 @@ for n, movie in enumerate(movies):
         if (movie['imdb_id'] not in top_dict.keys()) and (movie['top250rank'] < 251):
             print(f"     Old Top250 Rank: {movie['top250rank']:3}   New Top250 Rank: Dropped from Top 250\n")
             db.update_movie(movie['imdb_id'], 'top250rank', 888)
-        if movie['imdb_id'] in top_dict.keys():
-            print(f"     Old Top250 Rank: {movie['top250rank']:3}   New Top250 Rank: {top_dict[movie['imdb_id']]['rank']}\n")
+        elif movie['imdb_id'] in top_dict.keys():
+            change = ''
+            if movie['top250rank'] != top_dict[movie['imdb_id']]['rank']:
+                change = 'CHANGED'
+            print(f"     Old Top250 Rank: {movie['top250rank']:3}   New Top250 Rank: "
+                  f"{top_dict[movie['imdb_id']]['rank']} {change}\n")
             db.update_movie(movie['imdb_id'], 'top250rank', top_dict[movie['imdb_id']]['rank'])
             top_dict.pop(movie['imdb_id'])
+        else:
+            print()
 
     if fix == 3:
         # Update IMDB Rating
@@ -84,6 +91,8 @@ for n, movie in enumerate(movies):
         if date_added != movie['dateAdded']:
             print(f"   {datetime.fromtimestamp(date_added)}")
             db.update_movie(movie['imdb_id'], 'dateAdded', date_added)
+        else:
+            print()
 
     if fix == 1:
         #  Update run_time

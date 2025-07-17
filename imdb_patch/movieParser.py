@@ -388,9 +388,10 @@ class DOMHTMLMovieParser(DOMParserBase):
         Rule(
             key='runtimes',
             extractor=Path(
-                foreach='//li[@id="runtime"]//span[@class="ipc-metadata-list-item__list-content-item--subText"]',
-                path='./text()',
-                transform=lambda x: x.strip('()').replace(' min', '')
+                foreach='//li[@id="runtime"]//span[@class="ipc-metadata-list-item__list-content-item ipc-btn--not-interactable"]',
+                # foreach='//li[@id="runtime"]//span[@class="ipc-metadata-list-item__list-content-item--subText"]',
+                path='./text()'
+                # , transform=lambda x: x.strip('()').replace(' min', '').rstrip('m')
             )
         ),
         # Rule(
@@ -803,7 +804,8 @@ class DOMHTMLMovieParser(DOMParserBase):
             if nakas:
                 data['akas'] = nakas
         if 'runtimes' in data:
-            data['runtimes'] = [int(x) for x in data['runtimes']]
+            # data['runtimes'] = [int(x) for x in data['runtimes']
+            data['runtimes'] = [int(re.match(r'(?:(\d+)h)?', x).group(1) or 0)*60 + int(re.match(r'(?:(\d+)h)?\s*(?:(\d+)m)?', x).group(2) or 0) for x in data['runtimes']]
         if 'number of seasons' in data:
             data['seasons'] = [str(i) for i in range(1, data['number of seasons'] + 1)]
         if 'season/episode' in data:
