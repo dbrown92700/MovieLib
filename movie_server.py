@@ -37,7 +37,8 @@ def list_movies():
     name = request.args.get('name') or ''
     page = int(request.args.get('page') or '1')
     rating = float(request.args.get('rating') or '-1.1')
-    year = int(request.args.get('year') or '0')
+    year_min = int(request.args.get('year_min') or '0')
+    year_max = int(request.args.get('year_max') or '0')
     top250 = request.args.get('top250') or False
     length = int(request.args.get('length') or '0')
     watched = request.args.get('watched') or ''
@@ -52,7 +53,7 @@ def list_movies():
         session['user'] = db.user = 'none'
 
     movies, movie_count = db.movie_list(imdb_id=imdb_id, name=name, genre=genre, pagesize=pagesize, page=page,
-                                        rating=rating, year=year, top250=top250, length=length,
+                                        rating=rating, year_min=year_min, year_max=year_max, top250=top250, length=length,
                                         watched=watched, wants=wants,
                                         sort=sort, direction=direction)
     match_list = db.db_to_dict(movies)
@@ -119,8 +120,9 @@ def list_movies():
     top250_radio = f'<input type="radio" name="top250" value="True" {"checked" if top250=="True" else ""}>'
 
     url = (f'{app_url}/?name={"+".join(name)}&genre={genre}&watched={watched}&wants={wants}&'
-           f'rating={rating}&top250={"True" if top250=="True" else ""}&sort={sort}&direction={direction}&'
-           f'pagesize={pagesize}&length={length}')
+           f'rating={rating if rating>0 else ""}&top250={"True" if top250=="True" else ""}&sort={sort}&'
+           f'direction={direction}&pagesize={pagesize}&length={length if length>0 else ""}&'
+           f'year_min={year_min if year_min>0 else ""}&year_max={year_max if year_max>0 else ""}')
     pages = (f'<td width="350" align="center">Movies {(page-1) * pagesize + 1}-{min(page*pagesize, movie_count)} of '
              f'{movie_count} movies</td>\n'
              f'<td width="350" align="center">')
@@ -135,9 +137,9 @@ def list_movies():
         pages += '>>>next</td>\n'
 
     db.close()
-    return render_template('list_movies.html', genre_menu=Markup(genre_menu), name=' '.join(name), pages=Markup(pages),
-                           movie_table=Markup(movie_table), app_url=app_url, top250_radio=Markup(top250_radio),
-                           user=db.user)
+    return render_template('list_movies.html', genre_menu=Markup(genre_menu), name=' '.join(name),
+                           pages=Markup(pages), movie_table=Markup(movie_table), app_url=app_url,
+                           top250_radio=Markup(top250_radio), user=db.user)
 
 
 @app.route('/toggle')

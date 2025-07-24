@@ -142,7 +142,7 @@ class DataBase:
         self.cnx.commit()
         logger.info(f'File Deleted: Removed {imdb_id} from database')
 
-    def movie_list(self, imdb_id='', name='', genre='', rating=-1.1, year=0, top250=False, length=0,
+    def movie_list(self, imdb_id='', name='', genre='', rating=-1.1, year_min=0, year_max=0, top250=False, length=0,
                    page=1, pagesize=10, sort='title', direction='ASC', watched='', wants='', file=''):
         # Returns a list of movies using the filters specified and the count of movies in the form
         # ([(movie1),(movie2)], count)
@@ -155,14 +155,14 @@ class DataBase:
             movie_filter.append(f'movies.title LIKE "%{name}%"')
         if rating > 0:
             movie_filter.append(f'movies.rating>={rating}')
-        if year > 0:
-            movie_filter.append(f'movies.year={year}')
+        if year_min > 0:
+            movie_filter.append(f'movies.year>={year_min}')
+        if year_max > 0:
+            movie_filter.append(f'movies.year<={year_max}')
         if length > 0:
             movie_filter.append(f'movies.runTime<={length}')
         if top250:
             movie_filter.append(f'movies.top250rank<900')
-            sort = 'top250rank'
-            direction = 'ASC'
         if genre:
             movie_filter.append(f'genre="{genre}"')
         if watched:
@@ -188,6 +188,7 @@ class DataBase:
                    f'{filter_text} '
                    f'ORDER BY movies.{sort} {direction}, movies.title ASC '
                    f'{limit};')
+        print(command)
         self.cursor.execute(command)
         movies = self.cursor.fetchall()
         self.cursor.execute(f'SELECT COUNT(*) FROM movies '

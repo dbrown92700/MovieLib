@@ -49,9 +49,10 @@ function set_user() {
     <table>
         <tr valign="top">
             <td width = 400>
+                <B>Filters</B>
             <table>
-                <tr><td>Search by name:</td><td colspan="3"><input type="text" name="name" id="name"></td></tr>
-                <tr><td>Search by genre:</td>
+                <tr><td>Name Contains:</td><td colspan="3"><input type="text" name="name" id="name"></td></tr>
+                <tr><td>Genre:</td>
                     <td colspan="3">
                         <select name="genre" id="genre">
                             <option value="">None</option>
@@ -66,6 +67,11 @@ function set_user() {
                 <tr>
                     <td>Maximum Runtime:</td>
                     <td><input type="text" name="length" id="length" size="4"> Minutes</td>
+                </tr>
+                <tr>
+                    <td>Year Between:</td>
+                    <td><input type="text" name="year_min" id="year_min" size="4"> -
+                        <input type="text" name="year_max" id="year_max" size="4"></td>
                 </tr>
                 <tr>
                     <td>Want to Watch:</td>
@@ -95,20 +101,22 @@ function set_user() {
                     </td>
                 </tr>
                 <tr>
-                    <td><input type="submit"></td>
-                    <td colspan="3"><a href="{{app_url}}/">Show All Movies</a></td>
+                    <td>
+                        <input type="submit" value="Submit">
+                        <button type="button" value="Clear" onclick="location.href = '/';">Clear</button>
+                    </td>
                 </tr>
             </table>
             <td width="20"></td>
-            <td>
-            <table>
-                <tr>
+            <td style="height: 100%; min-height:1px;">
+            <table style="height: 100%; min-height:1px;">
+                <tr valign="top">
                     <td width="320" align="right">
                         User: <b>{{user}}</b><br>
                         <a href="user">Change user</a><br><br>
                     </td>
                 </tr>
-                <tr>
+                <tr valign="bottom">
                     <td>
                         Sort by:<br>
                         <select name="sort" id="sort">
@@ -117,15 +125,12 @@ function set_user() {
                             <option value="year">Year</option>
                             <option value="dateAdded">Date Added</option>
                             <option value="runTime">Runtime</option>
+                            <option value="top250rank">IMDB Top 250</option>
                         </select>
                         <select name="direction" id="direction">
                             <option value="ASC">Ascending</option>
                             <option value="DESC">Decending</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
+                        </select><br>
                         Movies per Page:
                         <select name="pagesize" id="pagesize">
                             <option value="10">10</option>
@@ -143,7 +148,8 @@ function set_user() {
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         const entries = urlParams.entries();
-        var elements = ['sort', 'direction', 'name', 'rating', 'wants', 'watched', 'available', 'user', 'pagesize', 'length'];
+        var elements = ['sort', 'direction', 'name', 'rating', 'wants', 'watched', 'available', 'user',
+        'pagesize', 'length', 'year_max', 'year_min'];
         for(const entry of entries) {
           for (var x=0; x<elements.length; x++) {
             if (entry[0] == elements[x]) {
