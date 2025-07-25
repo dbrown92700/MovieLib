@@ -11,6 +11,7 @@ import os
 from movie_sql import DataBase
 import urllib.parse
 from movie import Movie
+from fix_db import top250list
 
 app = Flask(__name__)
 app.secret_key = 'any random string'
@@ -267,6 +268,47 @@ def file_errors():
 
     return Markup(page)
 
+
+@app.route('/top250')
+def top250():
+    db = database()
+    top250dict = top250list()
+    top250table = ('<html><body>\n'
+                   '<table style="border-collapse: collapse;">\n')
+    for imdb_id in top250dict:
+        movie = db.movie_list(imdb_id=imdb_id)
+        if movie[1] == 0:
+            result = "Not Found"
+            color = "#ff9999"
+            title = top250dict[imdb_id]['title']
+        else:
+            this_movie = db.db_to_dict(movie[0])[0]
+            title = f"{this_movie['title']} [{this_movie['year']}]"
+            if this_movie['top250rank'] == top250dict[imdb_id]['rank']:
+                result = ""
+                color = "#ccff66"
+            else:
+                result = (f"Moved from {'Unranked' if this_movie['top250rank'] > 250 else this_movie['top250rank']} "
+                          f"to {top250dict[imdb_id]['rank']}")
+                color = "#ffff99"
+                db.update_movie(imdb_id=imdb_id, column='top250rank', value=top250dict[imdb_id]['rank'])
+        top250table += (f"<tr style='border-collapse:collapse; background-color:{color};'>"
+                        f"<td>{top250dict[imdb_id]['rank']} </td>"
+                        f"<td> {title}</td>"
+                        f"<td>{result}</td></tr>\n")
+    db_top250 = db.db_to_dict(db.movie_list(top250=True, pagesize=0)[0])
+    for movie in db_top250:
+        imdb_id = movie['imdb_id']
+        if imdb_id not in top250dict:
+            top250table += (f"<tr style='background-color:#ff9966'>"
+                            f"<td>{'' if movie['top250rank']==888 else movie['top250rank']} </td>"
+                            f"<td> {movie['title']} [{movie['year']}]</td>"
+                            f"<td>Dropped from Top 250</td></tr>\n")
+            db.update_movie(imdb_id=imdb_id, column='top250rank', value=888)
+
+    top250table += f'</table></body>'
+
+    return Markup(top250table)
 
 @app.route('/get_imdb')
 def get_imdb():

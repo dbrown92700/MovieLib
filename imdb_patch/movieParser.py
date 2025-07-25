@@ -827,7 +827,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                 data[k] = data[t_k]
             del data[t_k]
         if 'top/bottom rank' in data:
-            print(data['top/bottom rank'])
+            # print(data['top/bottom rank'])
             tbVal = data['top/bottom rank'].lower()
             if tbVal.startswith('top'):
                 tbKey = 'top 250 rank'
