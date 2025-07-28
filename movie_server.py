@@ -37,6 +37,7 @@ def list_movies():
     genre = request.args.get('genre') or ''
     series = request.args.get('series') or ''
     name = request.args.get('name') or ''
+    plot = request.args.get('plot') or ''
     page = int(request.args.get('page') or '1')
     rating = float(request.args.get('rating') or '-1.1')
     year_min = int(request.args.get('year_min') or '0')
@@ -56,7 +57,7 @@ def list_movies():
 
     movies, movie_count = db.movie_list(imdb_id=imdb_id, name=name, genre=genre, pagesize=pagesize, page=page,
                                         rating=rating, year_min=year_min, year_max=year_max, top250=top250,
-                                        length=length, series=series,
+                                        plot=plot, length=length, series=series,
                                         watched=watched, wants=wants,
                                         sort=sort, direction=direction)
     match_list = db.db_to_dict(movies)
