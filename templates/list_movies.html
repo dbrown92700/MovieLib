@@ -157,7 +157,7 @@ function set_user() {
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         const entries = urlParams.entries();
-        var elements = ['sort', 'direction', 'name', 'rating', 'wants', 'watched', 'available', 'user',
+        var elements = ['sort', 'direction', 'name', 'plot', 'rating', 'wants', 'watched', 'available', 'user',
         'pagesize', 'length', 'year_max', 'year_min'];
         for(const entry of entries) {
           for (var x=0; x<elements.length; x++) {
