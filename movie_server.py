@@ -35,6 +35,7 @@ def list_movies():
     db = database()
     imdb_id = request.args.get('imdb_id') or ''
     genre = request.args.get('genre') or ''
+    series = request.args.get('series') or ''
     name = request.args.get('name') or ''
     page = int(request.args.get('page') or '1')
     rating = float(request.args.get('rating') or '-1.1')
@@ -54,7 +55,8 @@ def list_movies():
         session['user'] = db.user = 'none'
 
     movies, movie_count = db.movie_list(imdb_id=imdb_id, name=name, genre=genre, pagesize=pagesize, page=page,
-                                        rating=rating, year_min=year_min, year_max=year_max, top250=top250, length=length,
+                                        rating=rating, year_min=year_min, year_max=year_max, top250=top250,
+                                        length=length, series=series,
                                         watched=watched, wants=wants,
                                         sort=sort, direction=direction)
     match_list = db.db_to_dict(movies)
@@ -79,9 +81,11 @@ def list_movies():
                         f'<td width=200>'
                         f'<a href="https://imdb.com/title/tt{movie["imdb_id"]}/" target="_imdb">'
                         f'{movie["title"]}</a><br>\n'
-                        f'{movie["year"]}<br>\n'
-                        f'Runtime: {run_time}<br>\n'
-                        f'Added: {date_added}\n'
+                        f'{movie["year"]}<br>\n')
+        for s in movie["series"]:
+            movie_table += f'<b>Series</b>: <a href="/?series={s}">{s}</a><br>\n'
+        movie_table += (f'<b>Runtime</b>: {run_time}<br>\n'
+                        f'<b>Added</b>: {date_added}\n'
                         f'<br><br><div align=center><a href="{app_url}/edit?id={movie["imdb_id"]}">Edit</a>'
                         f'</div></td>\n'
                         f'<td width=90 align=left><img src="{movie["coverUrl"]}" height=120 width=80></td>\n'
@@ -105,7 +109,7 @@ def list_movies():
                            f'id="{movie["imdb_id"]}watched" onclick="toggle(\'{movie["imdb_id"]}\', \'watched\')" ' \
                            f'width="20" height="20"></td></tr></table>' \
                            f'</td></tr>\n'
-        movie_table += (f'<tr><td style="border-bottom: 2px solid black;"></td>'
+        movie_table += (f'<tr><td style="border-bottom: 2px solid black;" align="right"><b>Location:&nbsp</b></td>'
                         f'<td colspan="4" style="border-bottom: 2px solid black;">'
                         f'{movie["directoryId"].removeprefix(root_dir)}/{movie["file"]}</td></tr>\n')
 
@@ -118,9 +122,18 @@ def list_movies():
             selected = ' selected'
         genre_menu += f'<option value="{genre_item}"{selected}>{genre_item}</option>\n'
 
+    series_menu = ''
+    full_series_list = list(db.series_dict.keys()).copy()
+    full_series_list.sort()
+    for ser in full_series_list:
+        selected = ''
+        if series == ser:
+            selected = ' selected'
+        series_menu += f'<option value="{ser}"{selected}>{ser}</option>\n'
+
     top250_radio = f'<input type="radio" name="top250" value="True" {"checked" if top250=="True" else ""}>'
 
-    url = (f'{app_url}/?name={"+".join(name)}&genre={genre}&watched={watched}&wants={wants}&'
+    url = (f'{app_url}/?name={name.replace(' ', '+')}&genre={genre}&watched={watched}&wants={wants}&'
            f'rating={rating if rating>0 else ""}&top250={"True" if top250=="True" else ""}&sort={sort}&'
            f'direction={direction}&pagesize={pagesize}&length={length if length>0 else ""}&'
            f'year_min={year_min if year_min>0 else ""}&year_max={year_max if year_max>0 else ""}')
@@ -140,7 +153,7 @@ def list_movies():
     db.close()
     return render_template('list_movies.html', genre_menu=Markup(genre_menu), name=' '.join(name),
                            pages=Markup(pages), movie_table=Markup(movie_table), app_url=app_url,
-                           top250_radio=Markup(top250_radio), user=db.user)
+                           series_menu=Markup(series_menu), top250_radio=Markup(top250_radio), user=db.user)
 
 
 @app.route('/toggle')
@@ -202,7 +215,23 @@ def edit_entry():
         if genre in db.movie_genres(imdb_id):
             checked = " checked"
         page += f'<input type="checkbox" id="{genre}" name="{genre}" value="{genre}"{checked}>{genre}<br>\n'
-    page += f'New Genre: <input id="New" name="New"><br>\n</td></form></tr></table></html></body>'
+    page += (f'New Genre: <input id="New" name="New"><br>\n'
+             f'</td></form></tr>\n'
+             f'<tr style="vertical-align:top;"><form action="/change_series" method="post">\n'
+             f'<td><input type="submit" value="Modify Series"></td>\n'
+             f'<td><input type="hidden" id="imdb_id" name="imdb_id" value="{imdb_id}">\n')
+
+    series = list(db.series_dict.keys())
+    series.sort()
+    for ser in series:
+        checked = ""
+        if ser in db.movie_series(imdb_id):
+            checked = " checked"
+        page += f'<input type="checkbox" id="{ser}" name="{ser}" value="{ser}"{checked}>{ser}<br>\n'
+
+    page += (f'New Series: <input id="New" name="New"><br>\n'
+             f'</td></form></tr></table>\n'
+             f'</html></body>')
 
     return Markup(page)
 
@@ -242,6 +271,20 @@ def change_genres():
     except ValueError:
         genres = list(set(genres))
     db.genres_update(movie_id=imdb_id, genres=genres)
+
+    return redirect(f'/?imdb_id={imdb_id}')
+
+@app.route('/change_series', methods=['POST'])
+def change_series():
+    db = database()
+    imdb_id = request.form.get('imdb_id')
+    series = list(dict(request.form).values())
+    series.remove(imdb_id)
+    try:
+        series.remove('')
+    except ValueError:
+        series = list(set(series))
+    db.series_update(movie_id=imdb_id, series=series)
 
     return redirect(f'/?imdb_id={imdb_id}')
 
