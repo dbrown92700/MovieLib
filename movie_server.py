@@ -137,7 +137,9 @@ def list_movies():
     url = (f'{app_url}/?name={name.replace(' ', '+')}&genre={genre}&watched={watched}&wants={wants}&'
            f'rating={rating if rating>0 else ""}&top250={"True" if top250=="True" else ""}&sort={sort}&'
            f'direction={direction}&pagesize={pagesize}&length={length if length>0 else ""}&'
-           f'year_min={year_min if year_min>0 else ""}&year_max={year_max if year_max>0 else ""}')
+           f'year_min={year_min if year_min>0 else ""}&year_max={year_max if year_max>0 else ""}&'
+           f'series={series}&plot={plot}')
+    session['url'] = url + f'&page={page}'
     pages = (f'<td width="350" align="center">Movies {(page-1) * pagesize + 1}-{min(page*pagesize, movie_count)} of '
              f'{movie_count} movies</td>\n'
              f'<td width="350" align="center">')
@@ -273,7 +275,8 @@ def change_genres():
         genres = list(set(genres))
     db.genres_update(movie_id=imdb_id, genres=genres)
 
-    return redirect(f'/?imdb_id={imdb_id}')
+    return redirect(session['url'])
+
 
 @app.route('/change_series', methods=['POST'])
 def change_series():
@@ -287,7 +290,7 @@ def change_series():
         series = list(set(series))
     db.series_update(movie_id=imdb_id, series=series)
 
-    return redirect(f'/?imdb_id={imdb_id}')
+    return redirect(session['url'])
 
 @app.route('/user')
 def get_user():
