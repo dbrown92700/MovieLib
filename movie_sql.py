@@ -150,10 +150,10 @@ class DataBase:
 
         join_text = ''
         if genre:
-            join_text = (f'JOIN movie_genres ON (movie_genres.movieId = movies.movieId) '
+            join_text += (f'JOIN movie_genres ON (movie_genres.movieId = movies.movieId) '
                          f'JOIN genres ON (genres.genreId = movie_genres.genreId) ')
         if series:
-            join_text = (f'JOIN movie_series ON (movie_series.movieId = movies.movieId) '
+            join_text += (f'JOIN movie_series ON (movie_series.movieId = movies.movieId) '
                          f'JOIN series ON (series.seriesId = movie_series.seriesId) ')
         if pagesize==0:
             limit = ''
