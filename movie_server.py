@@ -11,7 +11,7 @@ import os
 from movie_sql import DataBase
 import urllib.parse
 from movie import Movie
-from fix_db import top250list
+# from fix_db import top250list
 
 app = Flask(__name__)
 app.secret_key = 'any random string'
@@ -315,6 +315,7 @@ def file_errors():
 
 @app.route('/top250')
 def top250():
+    from fix_db import top250list
     db = database()
     top250dict = top250list()
     top250table = ('<html><body>\n'
