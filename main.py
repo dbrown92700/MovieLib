@@ -19,11 +19,15 @@ if __name__ == '__main__':
                         datefmt='%Y-%m-%d %H:%M:%S')
     db = DataBase(server='127.0.0.1', user=os.getenv('DB_USER'), password=os.getenv('DB_PASS'),
                   database=os.getenv('MOVIE_DB'))
+
+    # Generate a list of file changes as delta
     files = Files(root_dir)
     if not files.dirs:
         logger.error('ERROR: Drive Not Detected.  Exiting scanner.')
         exit()
     delta = files.delta(db.files())
+
+    # Scan through delta to determine what happened to each
     logger.info('--------------------SCANNING FILES-------------')
     file_errors = {}
     for file in delta:
@@ -49,4 +53,7 @@ if __name__ == '__main__':
         elif delta[file]['action'] == 'moved':
             db.update_dir(directory=directory, file=file)
             logger.info(f'File Moved: Database Updated {directory}/{file}')
+        elif delta[file]['action'] == 'duplicate':
+            logger.error(f'Duplicate File: {directory}/{file}')
+            file_errors[file] = directory + '--DUPLICATE FILENAME-- '
     db.update_file_errors(file_errors)
