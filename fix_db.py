@@ -44,8 +44,6 @@ if __name__ == "__main__":
 
     movies = db.db_to_dict(db.movie_list(pagesize=0)[0])
 
-    print(sys.argv)
-
     try:
         fix = int(sys.argv[1])
     except IndexError or ValueError:
@@ -95,7 +93,7 @@ if __name__ == "__main__":
             # Update IMDB Rating
 
             imdb_data = imdb.get_movie(movie['imdb_id'])
-            delta = imdb_data.data['rating'] - movie['rating']
+            delta = imdb_data.data['rating'] - float(movie['rating'])
             if delta:
                 print(f'   {movie["rating"]} --> {imdb_data.data["rating"]}')
                 # Store previous rating in the ratings_change table
