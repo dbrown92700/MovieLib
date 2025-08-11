@@ -347,7 +347,7 @@ def top250():
                 color = "#ffff99"
                 db.update_movie(imdb_id=imdb_id, column='top250rank', value=top250dict[imdb_id]['rank'])
         top250table += (f"<tr style='background-color:{color};'>"
-                        f"<td>{top250dict[imdb_id]['rank']} </td>"
+                        f"<td>{top250dict[imdb_id]['rank']:003} </td>"
                         f"<td> {title}</td>"
                         f"<td>{result}</td></tr>\n")
     db_top250 = db.db_to_dict(db.movie_list(top250=True, pagesize=0)[0])
@@ -355,7 +355,7 @@ def top250():
         imdb_id = movie['imdb_id']
         if imdb_id not in top250dict:
             top250table += (f"<tr style='background-color:#ff9966'>"
-                            f"<td>{'N/A' if movie['top250rank']==888 else movie['top250rank']} </td>"
+                            f"<td>{('N/A' if movie['top250rank']==888 else movie['top250rank']):003} </td>"
                             f"<td> {movie['title']} [{movie['year']}]</td>"
                             f"<td>Dropped from Top 250</td></tr>\n")
             db.update_movie(imdb_id=imdb_id, column='top250rank', value=888)
