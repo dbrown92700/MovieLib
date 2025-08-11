@@ -374,14 +374,14 @@ def rating_change():
              f'<th onclick="sortTable(3)">Rating</th>\n'
              f'</tr>\n')
     for movie in changes:
+        print(movie)
         detail = db.db_to_dict(db.movie_list(imdb_id=movie[0])[0])[0]
         title = f'{detail["title"]} ({detail["year"]})'
         time = datetime.fromtimestamp(movie[2])
-        delta = (detail["rating"] - movie[1])
-        table += (f'<tr bgcolor="{"pink" if delta<0 else "lightgreen"}"><td>{time.month:02}/{time.day:02}/{time.year}</td>'
+        table += (f'<tr bgcolor="{"pink" if movie[3]<0 else "lightgreen"}"><td>{time.month:02}/{time.day:02}/{time.year}</td>'
                  f'<td>{title}</td>'
-                 f'<td align="right">{(detail["rating"] - movie[1]):3.2}</td>'
-                 f'<td align="right">{detail["rating"]}</td></tr>\n')
+                 f'<td align="right">{movie[3]:3.2}</td>'
+                 f'<td align="right">{movie[1]}</td></tr>\n')
 
     return render_template('table_sort.html', url=session["url"], table=Markup(table))
 

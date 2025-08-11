@@ -53,7 +53,7 @@ movie_series = ('(movieId nchar(20) NOT NULL,'
 ratings_change = ('(movieId nchar(20) not NULL,'
                   ' rating decimal(3,1) not NULL,'
                   ' date int,'
-                  ' PRIMARY KEY (movieId)'
+                  ' delta decimal(3,1)'
                   ')')
 
 
@@ -404,7 +404,7 @@ class DataBase:
                 self.cursor.execute(command)
                 self.cnx.commit()
 
-    def ratings_change(self, movie_id='', rating=0):
+    def ratings_change(self, movie_id='', rating=0, delta=0):
         # With no attributes, returns a list of all changes in data descending order
         # If movie is specified, returns entry for that movie
         # If movie and rating is specified, adds or updates entry for movie
@@ -413,9 +413,8 @@ class DataBase:
             if rating:
                 ts = int(datetime.datetime.now().timestamp())
                 self.cursor.execute(f'INSERT INTO ratings_change '
-                                    f'(movieId, rating, date) VALUES '
-                                    f'("{movie_id}", {rating}, {ts}) '
-                                    f'ON DUPLICATE KEY UPDATE rating={rating}, date={ts};')
+                                    f'(movieId, rating, date, delta) VALUES '
+                                    f'("{movie_id}", {rating}, {ts}, {delta});')
                 return []
             else:
                 self.cursor.execute(f'SELECT * FROM ratings_change WHERE movieId = "{movie_id}";')
