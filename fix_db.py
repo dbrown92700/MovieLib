@@ -7,6 +7,7 @@ from datetime import datetime
 import requests
 from parsel import Selector
 import json
+import sys
 
 
 def top250list():
@@ -35,17 +36,26 @@ def top250list():
 
 if __name__ == "__main__":
 
+    # Pass menu option as sys arg or input from menu
+
     db = DataBase(server='127.0.0.1', user=os.getenv('DB_USER'), password=os.getenv('DB_PASS'),
                   database=os.getenv('MOVIE_DB'))
     imdb = Cinemagoer()
 
     movies = db.db_to_dict(db.movie_list(pagesize=0)[0])
 
-    fix = input(f'1. Run Time\n'
-                f'2. Date Added\n'
-                f'3. IMDB Rating\n'
-                f'4. IMDB Top 250\n'
-                f'?: ')
+    print(sys.argv)
+
+    try:
+        fix = int(sys.argv[1])
+    except IndexError or ValueError:
+
+        fix = input(f'1. Run Time\n'
+                    f'2. Date Added\n'
+                    f'3. IMDB Rating\n'
+                    f'4. IMDB Top 250\n'
+                    f'?: ')
+
     print('\n\n')
 
     try:
@@ -57,9 +67,6 @@ if __name__ == "__main__":
 
     if fix == 4:
         top_dict = top250list()
-        #
-        # for x in top_dict:
-        #     print(f"{top_dict[x]['rank']}. {top_dict[x]['title']}")
 
     for n, movie in enumerate(movies):
 
@@ -88,6 +95,9 @@ if __name__ == "__main__":
             imdb_data = imdb.get_movie(movie['imdb_id'])
             if imdb_data.data['rating'] != float(movie['rating']):
                 print(f'   {movie["rating"]} --> {imdb_data.data["rating"]}')
+                # Store previous rating in the ratings_change table
+                db.ratings_change(movie_id=movie['imdb_id'], rating=movie['rating'])
+                # Update rating in the movies table
                 db.update_movie(movie['imdb_id'],'rating', imdb_data.data['rating'])
             else:
                 print('   No Change')

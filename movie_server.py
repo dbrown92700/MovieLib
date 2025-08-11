@@ -256,12 +256,14 @@ def change_imdb():
         db.delete(imdb_id=imdb_id)
         return redirect(f'/?imdb_id={new_id.lstrip("t")}')
 
+
 @app.route('/delete')
 def delete_movie():
     db=database()
     imdb_id = request.args.get('imdb_id')
     db.delete(imdb_id=imdb_id)
     return redirect('/')
+
 
 @app.route('/change_genres', methods=['POST'])
 def change_genres():
@@ -291,6 +293,7 @@ def change_series():
     db.series_update(movie_id=imdb_id, series=series)
 
     return redirect(session['url'])
+
 
 @app.route('/user')
 def get_user():
@@ -357,6 +360,28 @@ def top250():
     top250table += f'</table></body>'
 
     return Markup(top250table)
+
+
+@app.route('/rating')
+def rating_change():
+    db = database()
+    changes = db.ratings_change()
+    page = (f'<html><body>\n'
+            f'<a href={session["url"]}>\n<br>Return</a><br><br>\n'
+            f'<table><tr><td>Date</td><td>Title</td><td>Change</td><td>Rating</td></tr>\n')
+    for movie in changes:
+        detail = db.db_to_dict(db.movie_list(imdb_id=movie[0])[0])[0]
+        title = f'{detail["title"]} ({detail["year"]})'
+        time = datetime.fromtimestamp(movie[2])
+        delta = (detail["rating"] - movie[1])
+        page += (f'<tr bgcolor="{"pink" if delta<0 else "lightgreen"}"><td>{time.month:02}/{time.day:02}/{time.year}</td>'
+                 f'<td>{title}</td>'
+                 f'<td align="right">{(detail["rating"] - movie[1]):3.2}</td>'
+                 f'<td align="right">{detail["rating"]}</td></tr>\n')
+    page += '</table></body></html>'
+
+    return Markup(page)
+
 
 @app.route('/get_imdb')
 def get_imdb():

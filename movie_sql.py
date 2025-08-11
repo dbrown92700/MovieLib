@@ -50,6 +50,11 @@ movie_series = ('(movieId nchar(20) NOT NULL,'
                 ' FOREIGN KEY (movieId) REFERENCES movies (movieId),'
                 ' FOREIGN KEY (seriesId) REFERENCES series (seriesId)'
                 ')')
+ratings_change = ('(movieId nchar(20) not NULL,'
+                  ' rating decimal(3,1) not NULL,'
+                  ' date int,'
+                  ' PRIMARY KEY (movieId)'
+                  ')')
 
 
 
@@ -76,6 +81,8 @@ class DataBase:
             logger.info(f'Created table series')
             self.cursor.execute(f'CREATE TABLE movie_series {movie_series};')
             logger.info(f'Created table movie_series')
+            self.cursor.execute(f'CREATE TABLE ratings_change {ratings_change};')
+            logger.info(f'Created table ratings_change')
             self.cursor.execute(f'CREATE TABLE none_watched (movieID nchar(20) not NULL);')
             self.cursor.execute(f'CREATE TABLE none_wants (movieID nchar(20) not NULL);')
             self.cursor.execute(f'CREATE TABLE users (user nchar(32) not NULL);')
@@ -107,6 +114,7 @@ class DataBase:
             imdb_id = self.cursor.fetchall()[0][0]
         self.cursor.execute(f'DELETE FROM movie_genres WHERE movieID="{imdb_id}";')
         self.cursor.execute(f'DELETE FROM movies WHERE movieID="{imdb_id}";')
+        self.cursor.execute(f'DELETE FROM ratings_change WHERE movieID="{imdb_id}";')
         self.cnx.commit()
         logger.info(f'File Deleted: Removed {imdb_id} from database')
 
@@ -164,7 +172,6 @@ class DataBase:
                    f'{filter_text} '
                    f'ORDER BY movies.{sort} {direction}, movies.title ASC '
                    f'{limit};')
-        print(command)
         self.cursor.execute(command)
         movies = self.cursor.fetchall()
         self.cursor.execute(f'SELECT COUNT(*) FROM movies '
@@ -396,3 +403,25 @@ class DataBase:
                 command = f'DELETE FROM movie_series WHERE movieId={movie_id} AND seriesId={self.series_dict[ser]};'
                 self.cursor.execute(command)
                 self.cnx.commit()
+
+    def ratings_change(self, movie_id='', rating=0):
+        # With no attributes, returns a list of all changes in data descending order
+        # If movie is specified, returns entry for that movie
+        # If movie and rating is specified, adds or updates entry for movie
+        if movie_id:
+            movie_id = movie_id.lstrip('t')
+            if rating:
+                ts = int(datetime.datetime.now().timestamp())
+                self.cursor.execute(f'INSERT INTO ratings_change '
+                                    f'(movieId, rating, date) VALUES '
+                                    f'("{movie_id}", {rating}, {ts}) '
+                                    f'ON DUPLICATE KEY UPDATE rating={rating}, date={ts};')
+                return []
+            else:
+                self.cursor.execute(f'SELECT * FROM ratings_change WHERE movieId = "{movie_id}";')
+                rating_change = self.cursor.fetchall()
+                return rating_change
+        else:
+            self.cursor.execute(f'SELECT * from ratings_change ORDER BY date DESC;')
+            ratings_change = self.cursor.fetchall()
+            return ratings_change
