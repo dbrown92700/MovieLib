@@ -1,4 +1,4 @@
-#!python3
+#!/usr/bin/env python
 
 __author__ = "David Brown <dbrown92700@gmail.com>"
 __contributors__ = []
@@ -324,8 +324,11 @@ def top250():
     from fix_db import top250list
     db = database()
     top250dict = top250list()
-    top250table = ('<html><body>\n'
-                   '<table style="border-collapse: collapse;">\n')
+    top250table = ('<tr>\n'
+                   '<th onclick="sortTable(0)">Rank</th>\n'
+                   '<th onclick="sortTable(1)">Title</th>\n'
+                   '<th onclick="sortTable(2)">Change</th>\n'
+                   '</tr>\n')
     for imdb_id in top250dict:
         movie = db.movie_list(imdb_id=imdb_id)
         if movie[1] == 0:
@@ -336,14 +339,14 @@ def top250():
             this_movie = db.db_to_dict(movie[0])[0]
             title = f"{this_movie['title']} [{this_movie['year']}]"
             if this_movie['top250rank'] == top250dict[imdb_id]['rank']:
-                result = ""
+                result = "No Change"
                 color = "#ccff66"
             else:
                 result = (f"Moved from {'Unranked' if this_movie['top250rank'] > 250 else this_movie['top250rank']} "
                           f"to {top250dict[imdb_id]['rank']}")
                 color = "#ffff99"
                 db.update_movie(imdb_id=imdb_id, column='top250rank', value=top250dict[imdb_id]['rank'])
-        top250table += (f"<tr style='border-collapse:collapse; background-color:{color};'>"
+        top250table += (f"<tr style='background-color:{color};'>"
                         f"<td>{top250dict[imdb_id]['rank']} </td>"
                         f"<td> {title}</td>"
                         f"<td>{result}</td></tr>\n")
@@ -352,35 +355,35 @@ def top250():
         imdb_id = movie['imdb_id']
         if imdb_id not in top250dict:
             top250table += (f"<tr style='background-color:#ff9966'>"
-                            f"<td>{'' if movie['top250rank']==888 else movie['top250rank']} </td>"
+                            f"<td>{'N/A' if movie['top250rank']==888 else movie['top250rank']} </td>"
                             f"<td> {movie['title']} [{movie['year']}]</td>"
                             f"<td>Dropped from Top 250</td></tr>\n")
             db.update_movie(imdb_id=imdb_id, column='top250rank', value=888)
 
-    top250table += f'</table></body>'
-
-    return Markup(top250table)
+    return render_template('table_sort.html', url=session["url"], table=Markup(top250table))
 
 
 @app.route('/rating')
 def rating_change():
     db = database()
     changes = db.ratings_change()
-    page = (f'<html><body>\n'
-            f'<a href={session["url"]}>\n<br>Return</a><br><br>\n'
-            f'<table><tr><td>Date</td><td>Title</td><td>Change</td><td>Rating</td></tr>\n')
+    table = (f'<tr>\n'
+             f'<th onclick="sortTable(0)">Date</th>\n'
+             f'<th onclick="sortTable(1)">Title</th>\n'
+             f'<th onclick="sortTable(2)">Change</th>\n'
+             f'<th onclick="sortTable(3)">Rating</th>\n'
+             f'</tr>\n')
     for movie in changes:
         detail = db.db_to_dict(db.movie_list(imdb_id=movie[0])[0])[0]
         title = f'{detail["title"]} ({detail["year"]})'
         time = datetime.fromtimestamp(movie[2])
         delta = (detail["rating"] - movie[1])
-        page += (f'<tr bgcolor="{"pink" if delta<0 else "lightgreen"}"><td>{time.month:02}/{time.day:02}/{time.year}</td>'
+        table += (f'<tr bgcolor="{"pink" if delta<0 else "lightgreen"}"><td>{time.month:02}/{time.day:02}/{time.year}</td>'
                  f'<td>{title}</td>'
                  f'<td align="right">{(detail["rating"] - movie[1]):3.2}</td>'
                  f'<td align="right">{detail["rating"]}</td></tr>\n')
-    page += '</table></body></html>'
 
-    return Markup(page)
+    return render_template('table_sort.html', url=session["url"], table=Markup(table))
 
 
 @app.route('/get_imdb')

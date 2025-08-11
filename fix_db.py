@@ -70,7 +70,7 @@ if __name__ == "__main__":
 
     for n, movie in enumerate(movies):
 
-        print(f"{n:04} {movie['imdb_id']} {movie['title']:80}", end='')
+        print(f"{n:04} {movie['imdb_id']:8} {movie['title']:80}", end='')
 
         if fix == 4:
 
