@@ -95,10 +95,11 @@ if __name__ == "__main__":
             # Update IMDB Rating
 
             imdb_data = imdb.get_movie(movie['imdb_id'])
-            if imdb_data.data['rating'] != float(movie['rating']):
+            delta = imdb_data.data['rating'] - movie['rating']
+            if delta:
                 print(f'   {movie["rating"]} --> {imdb_data.data["rating"]}')
                 # Store previous rating in the ratings_change table
-                db.ratings_change(movie_id=movie['imdb_id'], rating=movie['rating'], delta=)
+                db.ratings_change(movie_id=movie['imdb_id'], rating=imdb_data.data['rating'], delta=delta)
                 # Update rating in the movies table
                 db.update_movie(movie['imdb_id'],'rating', imdb_data.data['rating'])
             else:
