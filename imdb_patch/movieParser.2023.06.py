@@ -1,4 +1,6 @@
-# Copyright 2004-2025 Davide Alberani <da@erlug.linux.it>
+# -*- coding: utf-8 -*-
+
+# Copyright 2004-2023 Davide Alberani <da@erlug.linux.it>
 #           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -31,18 +33,24 @@ plot summary
 ...and so on.
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import functools
 import re
-from urllib.parse import unquote
 
-from imdb import imdbURL_base
+from imdb import PY2, imdbURL_base
 from imdb.Company import Company
 from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import KIND_MAP, _Container
 
-from .piculet import Path, Rule, Rules, preprocessors, transformers, reducers
+from .piculet import Path, Rule, Rules, preprocessors, transformers
 from .utils import DOMParserBase, analyze_imdbid, build_movie, build_person
+
+if PY2:
+    from urllib import unquote
+else:
+    from urllib.parse import unquote
 
 # Dictionary used to convert some section's names.
 _SECT_CONV = {
@@ -267,11 +275,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                            transform=analyze_og_title)
         ),
         Rule(
-            key='alternative kind',
-            extractor=Path('//h3[@itemprop="name"]/following-sibling::ul/li[last()]/text()',
-                           transform=lambda x: KIND_MAP.get(x.strip().lower(), x.strip().lower()))
-        ),
-        Rule(
             key='original title',
             extractor=Path('//div[@class="titlereference-header"]//span[@class="titlereference-original-title-label"]/preceding-sibling::text()',  # noqa: E501
                            transform=lambda x: re_space.sub(' ', x).strip())
@@ -286,13 +289,6 @@ class DOMHTMLMovieParser(DOMParserBase):
             key='localized title',
             extractor=Path('//meta[@name="title"]/@content',
                            transform=lambda x: analyze_og_title(x).get('title'))
-        ),
-        Rule(
-            key="stars",
-            extractor=Path(
-                foreach='//div[@class="titlereference-overview-section" and '
-                        'contains(text(), "Stars:")]/ul/li[1]/a',
-                path='./text()')
         ),
 
         # parser for misc sections like 'casting department', 'stunts', ...
@@ -384,8 +380,18 @@ class DOMHTMLMovieParser(DOMParserBase):
         Rule(
             key='genres',
             extractor=Path(
-                foreach='//li[@data-testid="storyline-genres"][.//span[starts-with(text(),"Genre")]]//ul/li/a',
+                foreach='//span[starts-with(text(), "Genre")]/..//li/a',
                 path='./text()'
+            )
+        ),
+        # New Runtimes Rule
+        Rule(
+            key='runtimes',
+            extractor=Path(
+                foreach='//li[@id="runtime"]//span[@class="ipc-metadata-list-item__list-content-item ipc-btn--not-interactable"]',
+                # foreach='//li[@id="runtime"]//span[@class="ipc-metadata-list-item__list-content-item--subText"]',
+                path='./text()'
+                # , transform=lambda x: x.strip('()').replace(' min', '').rstrip('m')
             )
         ),
         # Rule(
@@ -397,14 +403,6 @@ class DOMHTMLMovieParser(DOMParserBase):
         #     )
         # ),
         Rule(
-            key='runtimes',
-            extractor=Path(
-                foreach='//li[@id="runtime"]//span[@class="ipc-metadata-list-item__list-content-item ipc-btn--not-interactable"]',
-                path='./text()',
-                # transform=lambda x: x.strip().replace(' min', '')
-            )
-        ),
-        Rule(
             key='countries',
             extractor=Path(
                 foreach='//td[starts-with(text(), "Countr")]/..//li/a',
@@ -414,9 +412,9 @@ class DOMHTMLMovieParser(DOMParserBase):
         Rule(
             key='country codes',
             extractor=Path(
-                foreach='//li[@data-testid="title-details-origin"]/.//li/a',
+                foreach='//td[starts-with(text(), "Countr")]/..//li/a',
                 path='./@href',
-                transform=lambda x: re.sub(r".*country_of_origin=([A-z]+)&?.*", r"\1", x.lower())
+                transform=lambda x: x.split('/')[2].strip().lower()
             )
         ),
         Rule(
@@ -535,15 +533,15 @@ class DOMHTMLMovieParser(DOMParserBase):
         Rule(
             key='thin director',
             extractor=Rules(
-                foreach='//section[contains(@class,"ipc-page-section")][.//span[starts-with(normalize-space(text()),"Director")]]//ul/li',
+                foreach='//div[starts-with(normalize-space(text()), "Director")]/ul/li[1]/a',
                 rules=[
                     Rule(
                         key='name',
-                        extractor=Path('.//a/text()', reduce=reducers.first)
+                        extractor=Path('./text()')
                     ),
                     Rule(
                         key='link',
-                        extractor=Path('.//a/@href', reduce=reducers.first)
+                        extractor=Path('./@href')
                     )
                 ],
                 transform=lambda x: build_person(
@@ -552,17 +550,11 @@ class DOMHTMLMovieParser(DOMParserBase):
                 )
             )
         ),
-        # Rule(
-        #     key='top/bottom rank',
-        #     extractor=Path(
-        #         '//li[@class="ipl-inline-list__item"]//a[starts-with(@href, "/chart/")]/text()'
-        #     )
-        # ),
+        # Fixed only for Top Rated (IMDB Top 250)
         Rule(
             key='top/bottom rank',
             extractor=Path(
-                '//li[@class="ipc-inline-list__item test-class-react"]'
-                '//a[@class="ipc-link ipc-link--base top-rated-link"]/text()'
+                '//li[@class="ipc-inline-list__item test-class-react"]//a[@class="ipc-link ipc-link--base top-rated-link"]/text()'
             )
         ),
         Rule(
@@ -622,7 +614,7 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
         Rule(
             key='tv series link',
-            extractor=Path('//a[@data-testid="hero-title-block__series-link"]/@href')
+            extractor=Path('//a[starts-with(text(), "All Episodes")]/@href')
         ),
         Rule(
             key='akas',
@@ -701,9 +693,10 @@ class DOMHTMLMovieParser(DOMParserBase):
                 ]
             )
         ),
+        # Fixed for rating
         Rule(
             key='rating',
-            extractor=Path('//span[contains(@class, "ipc-rating-star--rating")]/text()')
+            extractor=Path('(//span[@class="ipc-rating-star--rating"])[1]/text()')
         ),
         Rule(
             key='votes',
@@ -711,7 +704,8 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
         Rule(
             key='cover url',
-            extractor=Path('//div[contains(@data-testid, "hero-media__poster")]//img/@src')
+            extractor=Path('//div[starts-with(@class, "ipc-poster ipc-poster--base ")]//img[@class="ipc-image"]/@src')
+            # //div[starts-with(@class, 'ipc-poster ipc-poster--base ')]
         ),
         Rule(
             key='imdbID',
@@ -810,24 +804,19 @@ class DOMHTMLMovieParser(DOMParserBase):
             if nakas:
                 data['akas'] = nakas
         if 'runtimes' in data:
-            # data['runtimes'] = [x.replace(' min', '')
-            #                     for x in data['runtimes']]
-            data['runtimes'] = [
-                int(re.match(r'(?:(\d+)h)?', x).group(1) or 0)*60 +
-                int(re.match(r'(?:(\d+)h)?\s*(?:(\d+)m)?', x).group(2) or 0)
-                for x in data['runtimes']
-            ]
+            # data['runtimes'] = [int(x) for x in data['runtimes']
+            data['runtimes'] = [int(re.match(r'(?:(\d+)h)?', x).group(1) or 0)*60 + int(re.match(r'(?:(\d+)h)?\s*(?:(\d+)m)?', x).group(2) or 0) for x in data['runtimes']]
         if 'number of seasons' in data:
             data['seasons'] = [str(i) for i in range(1, data['number of seasons'] + 1)]
         if 'season/episode' in data:
             tokens = data['season/episode'].split('Episode')
             try:
                 data['season'] = int(tokens[0].split('Season')[1])
-            except Exception:
+            except:
                 data['season'] = 'unknown'
             try:
                 data['episode'] = int(tokens[1])
-            except Exception:
+            except:
                 data['episode'] = 'unknown'
             del data['season/episode']
         for k in ('writer', 'director'):
@@ -838,14 +827,13 @@ class DOMHTMLMovieParser(DOMParserBase):
                 data[k] = data[t_k]
             del data[t_k]
         if 'top/bottom rank' in data:
+            # print(data['top/bottom rank'])
             tbVal = data['top/bottom rank'].lower()
             if tbVal.startswith('top'):
                 tbKey = 'top 250 rank'
-                # tbVal = _toInt(tbVal, [('top rated movies: #', '')])
                 tbVal = _toInt(tbVal, [('top rated movie #', '')])
             else:
                 tbKey = 'bottom 100 rank'
-                # tbVal = _toInt(tbVal, [('bottom rated movies: #', '')])
                 tbVal = _toInt(tbVal, [('bottom rated movie #', '')])
             if tbVal:
                 data[tbKey] = tbVal
@@ -884,9 +872,6 @@ class DOMHTMLMovieParser(DOMParserBase):
             del data['companies']
         if 'box office' in data:
             data['box office'] = dict(data['box office'])
-        alt_kind = data.get('alternative kind')
-        if alt_kind is not None:
-            data['kind'] = alt_kind
         return data
 
 
@@ -1139,23 +1124,36 @@ class DOMHTMLKeywordsParser(DOMParserBase):
     """
     rules = [
         Rule(
+            key='keywords',
+            extractor=Path(
+                foreach='//td[@data-item-keyword]',
+                path='./@data-item-keyword',
+                transform=lambda x: x.lower().replace(' ', '-')
+            )
+        ),
+        Rule(
             key='relevant keywords',
             extractor=Rules(
-                foreach='//ul[contains(@class, "ipc-metadata-list")]//li[contains(@class, "ipc-metadata-list-summary-item")]',
+                foreach='//td[@data-item-keyword]',
                 rules=[
                     Rule(
                         key='keyword',
-                        extractor=Path('.//a[1]//text()')
+                        extractor=Path('./@data-item-keyword')
                     ),
                     Rule(
-                        key='votes_str',
-                        extractor=Path('.//span[contains(@class, "ipc-voting__label__count--up")]/text()')
+                        key='ordering',
+                        extractor=Path('./@data-item-votes')
+                    ),
+                    Rule(
+                        key='vote_str',
+                        extractor=Path('./div[2]/div//text()')
                     )
                 ],
                 transform=lambda x: {
-                    'keyword': (x.get('keyword') or '').strip().lower(),
-                    'keyword_dash': (x.get('keyword') or '').strip().lower().replace(' ', '-'),
-                    'votes_str': (x.get('votes_str') or '').strip().lower()
+                    'keyword': x.get('keyword').lower(),
+                    'keyword_dash': x.get('keyword').lower().replace(' ', '-'),
+                    'ordering': x.get('ordering'),
+                    'votes_str': x.get('vote_str').strip().lower()
                 }
             )
         )
@@ -1170,17 +1168,10 @@ class DOMHTMLKeywordsParser(DOMParserBase):
                         x['votes_for'] = 0
                         x['total_votes'] = 0
                     else:
-                        try:
-                            x['votes_for'] = int(x['votes_str'].split('of')[0].strip())
-                            x['total_votes'] = int(re.sub(r"\D", "", x['votes_str'].split('of')[1]).strip())
-                        except Exception:
-                            x['votes_for'] = 0
-                            x['total_votes'] = 0
+                        x['votes_for'] = x['votes_str'].split('of')[0].strip()
+                        x['total_votes'] = re.sub(r"\D", "", x['votes_str'].split('of')[1]).strip()
                     rk.append(x)
             data['relevant keywords'] = rk
-        if 'relevant keywords' in data and len(data['relevant keywords']) > 0:
-            keywords = [k['keyword_dash'] for k in data['relevant keywords'] if k.get('keyword')]
-            data['keywords'] = keywords
         return data
 
 
@@ -1223,8 +1214,20 @@ class DOMHTMLTriviaParser(DOMParserBase):
     _defGetRefs = True
 
     rules = [
-        Rule(key="trivia", extractor=Path(foreach='//div[@class="ipc-html-content-inner-div"]', path='.//text()'))
+        Rule(
+            key='trivia',
+            extractor=Path(
+                foreach='//div[@class="sodatext"]',
+                path='.//text()',
+                transform=transformers.strip
+            )
+        )
     ]
+
+    def preprocess_dom(self, dom):
+        # Remove "link this quote" links.
+        preprocessors.remove(dom, '//span[@class="linksoda"]')
+        return dom
 
 
 class DOMHTMLSoundtrackParser(DOMParserBase):
@@ -1263,32 +1266,32 @@ class DOMHTMLSoundtrackParser(DOMParserBase):
                     title = title[1:-1]
                 nds = []
                 newData = {}
-                for t in ds[1:]:
-                    if ' with ' in t or ' by ' in t or ' from ' in t \
-                            or ' of ' in t or t.startswith('From '):
-                        nds.append(t)
+                for l in ds[1:]:
+                    if ' with ' in l or ' by ' in l or ' from ' in l \
+                            or ' of ' in l or l.startswith('From '):
+                        nds.append(l)
                     else:
                         if nds:
-                            nds[-1] += t
+                            nds[-1] += l
                         else:
-                            nds.append(t)
+                            nds.append(l)
                 newData[title] = {}
-                for t in nds:
+                for l in nds:
                     skip = False
                     for sep in ('From ',):
-                        if t.startswith(sep):
+                        if l.startswith(sep):
                             fdix = len(sep)
-                            kind = t[:fdix].rstrip().lower()
-                            info = t[fdix:].lstrip()
+                            kind = l[:fdix].rstrip().lower()
+                            info = l[fdix:].lstrip()
                             newData[title][kind] = info
                             skip = True
                     if not skip:
                         for sep in ' with ', ' by ', ' from ', ' of ':
-                            fdix = t.find(sep)
+                            fdix = l.find(sep)
                             if fdix != -1:
                                 fdix = fdix + len(sep)
-                                kind = t[:fdix].rstrip().lower()
-                                info = t[fdix:].lstrip()
+                                kind = l[:fdix].rstrip().lower()
+                                info = l[fdix:].lstrip()
                                 newData[title][kind] = info
                                 break
                 nd.append(newData)
@@ -1321,10 +1324,16 @@ class DOMHTMLCrazyCreditsParser(DOMParserBase):
     ]
 
 
+def _process_goof(x):
+    text = (x.get('text') or '').strip()
+    category = (x.get('category') or 'Goof').strip()
+    return {"category": category, "text": text}
+
+
 class DOMHTMLGoofsParser(DOMParserBase):
     """Parser for the "goofs" page of a given movie.
     The page should be provided as a string, as taken from
-    the www.imdb.com server. The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example::
@@ -1337,21 +1346,22 @@ class DOMHTMLGoofsParser(DOMParserBase):
     rules = [
         Rule(
             key='goofs',
-            extractor=Path(
-                foreach='.//div[contains(@class, "ipc-html-content-inner-div")]',
-                path='./text()',
-                transform=lambda x: x.strip()
+            extractor=Rules(
+                foreach='//div[contains(@class, "soda sodavote")]',
+                rules=[
+                    Rule(
+                        key='text',
+                        extractor=Path('./div[@class="sodatext"]/text()')
+                    ),
+                    Rule(
+                        key='category',
+                        extractor=Path('./preceding-sibling::h4[1]/text()')
+                    )
+                ],
+                transform=_process_goof
             )
         )
     ]
-
-    def postprocess_data(self, data):
-        goofs = data.get('goofs', [])
-        if not goofs:
-            return {}
-        # Clean and structure the goofs data
-        processed_goofs = [goof for goof in goofs if goof.strip()]
-        return {'goofs': processed_goofs}
 
 
 class DOMHTMLQuotesParser(DOMParserBase):
@@ -1371,9 +1381,12 @@ class DOMHTMLQuotesParser(DOMParserBase):
         Rule(
             key='quotes',
             extractor=Path(
-                foreach='//div[@class="ipc-html-content-inner-div"]',
+                foreach='//div[@class="sodatext"]',
                 path='.//text()',
                 transform=lambda x: x.strip()
+                                     .replace(' \n', '::')
+                                     .replace('::\n', '::')
+                                     .replace('\n', ' ')
             )
         )
     ]
@@ -1386,16 +1399,8 @@ class DOMHTMLQuotesParser(DOMParserBase):
         quotes = data.get('quotes', [])
         if not quotes:
             return {}
-        # IMDb now separates quotes by double newlines, so split accordingly
-        processed_quotes = []
-        for q in quotes:
-            # Split by double newlines, then by single newlines for lines in a quote
-            blocks = [block.strip() for block in q.split('\n\n') if block.strip()]
-            for block in blocks:
-                lines = [line.strip() for line in block.split('\n') if line.strip()]
-                if lines:
-                    processed_quotes.append(lines)
-        return {'quotes': processed_quotes}
+        quotes = [q.split('::') for q in quotes]
+        return {'quotes': quotes}
 
 
 class DOMHTMLReleaseinfoParser(DOMParserBase):
@@ -1413,24 +1418,23 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
         Rule(
             key='release dates',
             extractor=Rules(
-                foreach='//div[@data-testid="sub-section-releases"]/ul/li',
+                foreach='//table[contains(@class, "release-dates-table-test-only")]//tr',
                 rules=[
                     Rule(
                         key='country',
-                        extractor=Path('./a[contains(@href, "/calendar")]/text()', transform=lambda x: x.strip())
-                    ),
-                    Rule(
-                        key='date',
-                        extractor=Path('./div/ul/li/span[1]/text()', transform=lambda x: x.strip())
-                    ),
-                    Rule(
-                        key='notes',
-                        extractor=Path('./div/ul/li/span[2]/text()', transform=lambda x: x.strip())
+                        extractor=Path('.//td[1]//text()')
                     ),
                     Rule(
                         key='country_code',
-                        extractor=Path('./a[contains(@href, "/calendar")]/@href',
-                                       transform=lambda x: x.split('region=')[1].split('&')[0].strip().upper() if 'region=' in x else '')
+                        extractor=Path('.//td[1]/a/@href')
+                    ),
+                    Rule(
+                        key='date',
+                        extractor=Path('.//td[2]//text()')
+                    ),
+                    Rule(
+                        key='notes',
+                        extractor=Path('.//td[3]//text()')
                     )
                 ]
             )
@@ -1438,94 +1442,77 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
         Rule(
             key='akas',
             extractor=Rules(
-                foreach='//div[@data-testid="sub-section-akas"]/ul/li',
+                foreach='//table[contains(@class, "akas-table-test-only")]//tr',
                 rules=[
                     Rule(
-                        key='title',
-                        extractor=Path('.//ul//li/span[contains(@class, "ipc-metadata-list-item__list-content-item")][1]/text()', transform=lambda x: x.strip())
+                        key='countries',
+                        extractor=Path('./td[1]/text()')
                     ),
                     Rule(
-                        key='countries',
-                        extractor=Path('./span/text()', transform=lambda x: x.strip())
+                        key='title',
+                        extractor=Path('./td[2]/text()')
                     )
                 ]
             )
         )
     ]
 
-    preprocessors = []
+    preprocessors = [
+        (re.compile('(<h5><a name="?akas"?.*</table>)', re.I | re.M | re.S),
+         r'<div class="_imdbpy_akas">\1</div>')
+    ]
 
     def postprocess_data(self, data):
         if not ('release dates' in data or 'akas' in data):
             return data
-
         releases = data.get('release dates') or []
-        processed_releases = []
-        raw_releases = []
-        for item in releases:
-            country = item.get('country')
-            date = item.get('date')
+        rl = []
+        for i in releases:
+            country = i.get('country')
+            date = i.get('date')
             if not (country and date):
                 continue
-
-            info = f"{country}::{date}"
-            notes = item.get('notes')
+            country = country.strip()
+            date = date.strip()
+            if not (country and date):
+                continue
+            notes = i.get('notes')
+            info = '%s::%s' % (country, date)
             if notes:
-                item['notes'] = notes.replace('\n', '').strip()
-                info += f"::{item['notes']}"
-
-            processed_releases.append(info)
-            raw_item = {
-                'country': country,
-                'date': date,
-                'country_code': item.get('country_code', ''),
-            }
-            if notes:
-                raw_item['notes'] = item['notes']
-            raw_releases.append(raw_item)
-
-        if raw_releases:
-            data['raw release dates'] = raw_releases
-        if processed_releases:
-            data['release dates'] = processed_releases
-        elif 'release dates' in data:
+                notes = notes.replace('\n', '')
+                i['notes'] = notes
+                info += notes
+            rl.append(info)
+        if releases:
+            for rd in data['release dates']:
+                rd['country_code'] = rd['country_code'].split('region=')[1].split('&')[0].strip().upper()
+            data['raw release dates'] = data['release dates']
             del data['release dates']
-
+        if rl:
+            data['release dates'] = rl
         akas = data.get('akas') or []
-        processed_akas = []
-        raw_akas = []
-        for item in akas:
-            title = item.get('title')
+        nakas = []
+        for aka in akas:
+            title = (aka.get('title') or '').strip()
             if not title:
                 continue
-
-            countries_str = item.get('countries')
-            raw_item = {'title': title}
-            if countries_str:
-                raw_item['countries'] = countries_str
-                countries = [c.strip() for c in countries_str.split(',') if c.strip()]
-                for country in countries:
-                    processed_akas.append(f"{title} ({country})")
+            countries = (aka.get('countries') or '').split(',')
+            if not countries:
+                nakas.append(title)
             else:
-                processed_akas.append(title)
-            raw_akas.append(raw_item)
-
-        if raw_akas:
-            if 'raw release dates' in data:
-                country_map = {rd['country']: rd['country_code'] for rd in data['raw release dates'] if rd.get('country_code')}
-                for aka_item in raw_akas:
-                    if 'countries' in aka_item:
-                        first_country = aka_item['countries'].split(',')[0].strip()
-                        if first_country in country_map:
-                            aka_item['country_code'] = country_map[first_country]
-
-            data['raw akas'] = raw_akas
-
-        if processed_akas:
-            data['akas'] = data['akas from release info'] = processed_akas
-        elif 'akas' in data:
+                for country in countries:
+                    nakas.append('%s %s' % (title, country.strip()))
+        if akas:
+            if releases:
+                for rd in data['raw release dates']:
+                    for a in data['akas']:
+                        if 'countries' in a:
+                            if rd['country'].strip() in a['countries'].strip():
+                                a['country_code'] = rd['country_code']
+            data['raw akas'] = data['akas']
             del data['akas']
-
+        if nakas:
+            data['akas'] = data['akas from release info'] = nakas
         return data
 
 
@@ -1534,49 +1521,118 @@ class DOMHTMLRatingsParser(DOMParserBase):
     The page should be provided as a string, as taken from
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
+
+    Example::
+
+        rparser = DOMHTMLRatingsParser()
+        result = rparser.parse(userratings_html_string)
     """
-    # Updated for new IMDb ratings page layout (2024)
+    re_means = re.compile(r'mean\s*=\s*([0-9]\.[0-9])\s*median\s*=\s*([0-9])', re.I)
+
     rules = [
         Rule(
-            key='aggregate rating',
-            extractor=Path(
-                '//div[@data-testid="rating-button__aggregate-rating__score"]/span[1]/text()',
-                transform=lambda x: float(x) if x else None
+            key='votes',
+            extractor=Rules(
+                foreach='//th[@class="firstTableCoulmn"]/../../tr',
+                rules=[
+                    Rule(
+                        key='ordinal',
+                        extractor=Path('./td[1]/div//text()')
+                    ),
+                    Rule(
+                        key='votes',
+                        extractor=Path('./td[3]/div/div//text()')
+                    )
+                ]
             )
         ),
         Rule(
-            key='aggregate votes',
+            key='mean and median',
             extractor=Path(
-                '//div[@data-testid="rating-button__aggregate-rating__score"]/following-sibling::div[1]/text()',
-                transform=lambda x: int(x.replace('M', '000000').replace('K', '000').replace('.', '').replace(',', '').strip()) if x else None
+                '//div[starts-with(normalize-space(text()), "Arithmetic mean")]/text()'
             )
         ),
         Rule(
-            key='user rating',
-            extractor=Path(
-                '//div[@data-testid="rating-button__user-rating__score"]/span[1]/text()',
-                transform=lambda x: int(x) if x else None
-            )
-        ),
-        Rule(
-            key='unweighted mean',
-            extractor=Path(
-                '//p[@data-testid="calculations-label"]/text()',
-                transform=lambda x: float(x.split()[0]) if x and x.split() else None
+            key='demographics',
+            extractor=Rules(
+                foreach='//div[@class="smallcell"]',
+                rules=[
+                    Rule(
+                        key='link',
+                        extractor=Path('./a/@href')
+                    ),
+                    Rule(
+                        key='rating',
+                        extractor=Path('..//div[@class="bigcell"]//text()')
+                    ),
+                    Rule(
+                        key='votes',
+                        extractor=Path('./a/text()')
+                    )
+                ]
             )
         )
     ]
 
     def postprocess_data(self, data):
         nd = {}
-        if data.get('aggregate rating'):
-            nd['rating'] = data['aggregate rating']
-        if data.get('aggregate votes'):
-            nd['votes'] = data['aggregate votes']
-        if data.get('user rating'):
-            nd['user_rating'] = data['user rating']
-        if data.get('unweighted mean'):
-            nd['arithmetic mean'] = data['unweighted mean']
+        demographics = data.get('demographics')
+        if demographics:
+            dem = {}
+            for dem_data in demographics:
+                link = (dem_data.get('link') or '').strip()
+                votes = (dem_data.get('votes') or '').strip()
+                rating = (dem_data.get('rating') or '').strip()
+                if not (link and votes and rating):
+                    continue
+                eq_idx = link.rfind('=')
+                if eq_idx == -1:
+                    continue
+                info = link[eq_idx + 1:].replace('_', ' ')
+                try:
+                    votes = int(votes.replace(',', ''))
+                except Exception:
+                    continue
+                try:
+                    rating = float(rating)
+                except Exception:
+                    continue
+                dem[info] = {'votes': votes, 'rating': rating}
+            nd['demographics'] = dem
+        votes = data.get('votes', [])
+        if votes:
+            nd['number of votes'] = {}
+            for v_info in votes:
+                ordinal = v_info.get('ordinal')
+                nr_votes = v_info.get('votes')
+                if not (ordinal and nr_votes):
+                    continue
+                try:
+                    ordinal = int(ordinal)
+                except Exception:
+                    continue
+                try:
+                    nr_votes = int(nr_votes.replace(',', ''))
+                except Exception:
+                    continue
+                nd['number of votes'][ordinal] = nr_votes
+        mean = data.get('mean and median', '')
+        if mean:
+            means = self.re_means.findall(mean)
+            if means and len(means[0]) == 2:
+                am, med = means[0]
+                try:
+                    am = float(am)
+                except (ValueError, OverflowError):
+                    pass
+                if isinstance(am, float):
+                    nd['arithmetic mean'] = am
+                try:
+                    med = int(med)
+                except (ValueError, OverflowError):
+                    pass
+                if isinstance(med, int):
+                    nd['median'] = med
         return nd
 
 
@@ -1605,12 +1661,11 @@ class DOMHTMLCriticReviewsParser(DOMParserBase):
     rules = [
         Rule(
             key='metascore',
-            extractor=Path('//*[@data-testid="critic-reviews-title"]/div/text()',
-                           transform=lambda x: int(x.strip()))
+            extractor=Path('//div[@class="metascore_wrap"]/div/span//text()')
         ),
         Rule(
             key='metacritic url',
-            extractor=Path('//*[@data-testid="critic-reviews-title"]/div[2]/div[2]/a/@href')
+            extractor=Path('//div[@class="article"]/div[@class="see-more"]/a/@href')
         )
     ]
 
@@ -1811,7 +1866,7 @@ class DOMHTMLOfficialsitesParser(DOMParserBase):
     """
     rules = [
         Rule(
-            foreach='//div[contains(@class, "ipc-page-grid__item")]/section[contains(@class, "ipc-page-section--base")]',  # noqa: E501
+            foreach='//div[contains(@class, "ipc-page-grid__item")]/section[contains(@class, "ipc-page-section--base")]',
             key=Path(
                 './/h3//text()',
                 transform=lambda x: x.strip().lower()
@@ -1850,7 +1905,7 @@ class DOMHTMLConnectionsParser(DOMParserBase):
     """
     rules = [
         Rule(
-            foreach='//div[contains(@class, "ipc-page-grid__item")]/section[contains(@class, "ipc-page-section--base")]',  # noqa: E501
+            foreach='//div[contains(@class, "ipc-page-grid__item")]/section[contains(@class, "ipc-page-section--base")]',
             key=Path(
                 './div[1]//h3//text()',
                 transform=lambda x: (x or '').strip().lower()
@@ -1929,31 +1984,35 @@ class DOMHTMLLocationsParser(DOMParserBase):
 
 
 class DOMHTMLTechParser(DOMParserBase):
-    """Parser for the technical specifications page of a given movie.
-    Extracts technical specs from the new IMDb layout using robust XPath rules.
+    """Parser for the "technical", "publicity" (for people) and "contacts" (for people)
+    pages of a given movie.
+    The page should be provided as a string, as taken from
+    the www.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example::
+
+        tparser = DOMHTMLTechParser()
+        result = tparser.parse(technical_html_string)
     """
     kind = 'tech'
+    re_space = re.compile(r'\s+')
+
     rules = [
         Rule(
-            key='technical specs',
+            key='tech',
             extractor=Rules(
-                foreach='//ul[contains(@class, "ipc-metadata-list")]/li[contains(@class, "ipc-metadata-list__item")]',
+                foreach='//table//tr/td[@class="label"]',
                 rules=[
                     Rule(
-                        key='label',
-                        extractor=Path('.//span[contains(@class, "ipc-metadata-list-item__label")]/text()', transform=lambda x: x.strip().lower())
-                    ),
-                    Rule(
-                        key='values',
+                        key=Path(
+                            './text()',
+                            transform=lambda x: x.lower().strip()),
                         extractor=Path(
-                            foreach='.//ul[contains(@class, "ipc-inline-list")]/li',
-                            path='.//text()',
-                            transform=lambda x: x.strip()
+                            '..//td[2]//text()',
+                            transform=lambda x: [t.strip()
+                                                 for t in x.split(':::') if t.strip()]
                         )
-                    ),
-                    Rule(
-                        key='single_value',
-                        extractor=Path('.//div[contains(@class, "ipc-metadata-list-item__content-container")]/span[1]/text()', transform=lambda x: x.strip())
                     )
                 ]
             )
@@ -1961,28 +2020,27 @@ class DOMHTMLTechParser(DOMParserBase):
     ]
 
     preprocessors = [
-        (re.compile('ipc-metadata-list-item__list-content-item--subText">', re.I),
-         'ipc-metadata-list-item__list-content-item--subtext">::')
+        (re.compile('(<h5>.*?</h5>)', re.I), r'</div>\1<div class="_imdbpy">'),
+        (re.compile('((<br/>|</p>|</table>))\n?<br/>(?!<a)', re.I), r'\1</div>'),
+        # the ones below are for the publicity parser
+        (re.compile('<p>(.*?)</p>', re.I), r'\1<br/>'),
+        (re.compile('(</td><td valign="top">)', re.I), r'\1::'),
+        (re.compile('(</tr><tr>)', re.I), r'\n\1'),
+        (re.compile(r'<span class="ghost">\|</span>', re.I), r':::'),
+        (re.compile('<br/?>', re.I), r':::')
+        # this is for splitting individual entries
     ]
 
     def postprocess_data(self, data):
-        specs = data.get('technical specs', [])
-        result = {}
-        for item in specs:
-            label = item.get('label')
-            values = item.get('values')
-            single_value = item.get('single_value')
-            if label:
-                if values and isinstance(values, list) and any(values):
-                    # Filter out empty strings
-                    values = [v for v in values if v.strip()]
-                    if len(values) == 1:
-                        result[label] = values[0]
-                    elif len(values) > 1:
-                        result[label] = values
-                elif single_value:
-                    result[label] = single_value
-        return {self.kind: result}
+        info = {}
+        for section in data.get('tech', []):
+            info.update(section)
+        for key, value in info.items():
+            if isinstance(value, list):
+                info[key] = [self.re_space.sub(' ', x).strip() for x in value]
+            else:
+                info[key] = self.re_space.sub(' ', value).strip()
+        return {self.kind: info}
 
 
 class DOMHTMLNewsParser(DOMParserBase):
@@ -2078,11 +2136,6 @@ def _parse_review(x):
     return result
 
 
-MONTH_NUMS = {m: "%02d" % (n + 1)
-              for n, m in enumerate(["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])}
-
-
 class DOMHTMLSeasonEpisodesParser(DOMParserBase):
     """Parser for the "episode list" page of a given movie.
     The page should be provided as a string, as taken from
@@ -2098,51 +2151,62 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
     rules = [
         Rule(
             key='series link',
-            extractor=Path('.//div[@data-testid="poster"]//a/@href')
+            extractor=Path('//div[@class="parent"]//a/@href')
         ),
         Rule(
             key='series title',
-            extractor=Path('//h2[@data-testid="subtitle"]/text()')
+            extractor=Path('//head/meta[@property="og:title"]/@content')
         ),
         Rule(
             key='_seasons',
             extractor=Path(
-                foreach='//a[@data-testid="tab-season-entry"]',
-                path='./text()'
+                foreach='//select[@id="bySeason"]//option',
+                path='./@value'
             )
         ),
         Rule(
             key='_current_season',
-            extractor=Path('//a[@data-testid="tab-season-entry"][contains(@class, "ipc-tab--active")]/text()')
+            extractor=Path('//select[@id="bySeason"]//option[@selected]/@value')
         ),
         Rule(
             key='episodes',
             extractor=Rules(
-                foreach='//h4',
+                foreach='//div[@class="info"]',
                 rules=[
                     Rule(
-                        key=Path('.//a//text()'),
+                        key=Path('.//meta/@content',
+                                 transform=lambda x: 'episode %s' % x),
                         extractor=Rules(
                             rules=[
                                 Rule(
                                     key='link',
-                                    extractor=Path('.//a/@href')
+                                    extractor=Path('.//strong//a[@href][1]/@href')
                                 ),
                                 Rule(
                                     key='original air date',
-                                    extractor=Path('following-sibling::span/text()')
+                                    extractor=Path('.//div[@class="airdate"]/text()')
+                                ),
+                                Rule(
+                                    key='title',
+                                    extractor=Path('.//strong//text()')
                                 ),
                                 Rule(
                                     key='rating',
-                                    extractor=Path('../..//span[contains(@class, "ratingGroup--imdb-rating")]/text()')
+                                    extractor=Path(
+                                        './/div[contains(@class, "ipl-rating-star")][1]'
+                                        '/span[@class="ipl-rating-star__rating"][1]/text()'
+                                    )
                                 ),
                                 Rule(
                                     key='votes',
-                                    extractor=Path('../..//span[contains(@class, "ipc-rating-star--voteCount")]/text()')
+                                    extractor=Path(
+                                        './/div[contains(@class, "ipl-rating-star")][1]'
+                                        '/span[@class="ipl-rating-star__total-votes"][1]/text()'
+                                    )
                                 ),
                                 Rule(
                                     key='plot',
-                                    extractor=Path('../..//div[@role="presentation"]//text()')
+                                    extractor=Path('.//div[@class="item_description"]//text()')
                                 )
                             ]
                         )
@@ -2176,25 +2240,23 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
                 data[k] = [episode]
             del data['episode -1']
         episodes = data.get('episodes', [])
-        for seq, ep in enumerate(episodes):
+        for ep in episodes:
             if not ep:
                 continue
-            episode_nr_title, episode = list(ep.items())[0]
-            nr_title_tokens = episode_nr_title.split(" ∙ ")
-            if len(nr_title_tokens) == 2:
-                episode_seq, episode_title = nr_title_tokens
-                episode_nr = episode_seq.split(".")[1][1:]
-            else:
-                episode_nr, episode_title = seq + 1, nr_title_tokens[0]
+            episode_nr, episode = list(ep.items())[0]
+            if not episode_nr.startswith('episode '):
+                continue
+            episode_nr = episode_nr[8:].rstrip()
             try:
                 episode_nr = int(episode_nr)
             except ValueError:
                 pass
-            episode_id = analyze_imdbid(episode.get('link', ''))
+            episode_id = analyze_imdbid(episode.get('link' ''))
             episode_air_date = episode.get('original air date', '').strip()
+            episode_title = episode.get('title', '').strip()
             episode_plot = episode.get('plot', '')
             episode_rating = episode.get('rating', '')
-            episode_votes = episode.get('votes', '')[2:-1]  # remove ()
+            episode_votes = episode.get('votes', '')
             if not (episode_nr is not None and episode_id and episode_title):
                 continue
             ep_obj = Movie(movieID=episode_id, title=episode_title,
@@ -2206,27 +2268,18 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
             if episode_rating:
                 try:
                     ep_obj['rating'] = float(episode_rating)
-                except Exception:
+                except:
                     pass
             if episode_votes:
                 try:
-                    if episode_votes[-1] == "K":
-                        ep_votes = int(float(episode_votes[:-1]) * 1000)
-                    elif episode_votes[-1] == "M":
-                        ep_votes = int(float(episode_votes[:-1]) * 1000000)
-                    else:
-                        ep_votes = int(episode_votes)
-                    ep_obj['votes'] = ep_votes
-                except Exception:
+                    ep_obj['votes'] = int(episode_votes.replace(',', '')
+                                          .replace('.', '').replace('(', '').replace(')', ''))
+                except:
                     pass
             if episode_air_date:
+                ep_obj['original air date'] = episode_air_date
                 if episode_air_date[-4:].isdigit():
-                    year = episode_air_date[-4:]
-                    if episode_air_date.startswith(("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")):
-                        ep_month, ep_day = episode_air_date[5:].split(",")[0].split(" ")
-                        episode_air_date = year + "-" + MONTH_NUMS[ep_month] + "-" + "%02d" % int(ep_day)
-                    ep_obj['original air date'] = episode_air_date
-                    ep_obj['year'] = int(year)
+                    ep_obj['year'] = episode_air_date[-4:]
             if episode_plot:
                 ep_obj['plot'] = episode_plot
             nd[selected_season][episode_nr] = ep_obj
