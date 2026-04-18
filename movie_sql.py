@@ -199,7 +199,7 @@ class DataBase:
         command = (f'INSERT INTO movies (movieId, file, directoryId, title, year, rating, plot, top250rank, coverUrl, '
                    f'dateAdded, runTime) VALUES ("{movie.imdb_id}", "{movie.filename}", "{movie.directory}", '
                    f'"{movie.imdb_data["title"]}", "{movie.imdb_data["year"]}", "{movie.imdb_data["rating"]}", '
-                   f'"{plot}", "{movie.imdb_data["top250"]}", "{movie.imdb_data["cover url"]}",'
+                   f'"{plot}", "{movie.imdb_data["top250"]}", "{movie.imdb_data["cover_url"]}",'
                    f'"{int(date_added)}", "{movie.imdb_data["duration"]}");')
         self.cursor.execute(command)
         self.cnx.commit()
