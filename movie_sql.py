@@ -190,7 +190,7 @@ class DataBase:
             logger.info(f'Duplicate: File: {movie.directory}/{movie.filename}\n'
                         f'   Database: {found_movie["directoryId"]}/{found_movie["file"]}')
             return {'status': 'duplicate'}
-        plot = movie.imdb_data['plot'][0].replace('"', "'")
+        plot = movie.imdb_data['plot'].replace('"', "'")
         try:
             date_added = os.path.getmtime(f'{movie.directory}/{movie.filename}')
         except PermissionError:
@@ -200,7 +200,7 @@ class DataBase:
                    f'dateAdded, runTime) VALUES ("{movie.imdb_id}", "{movie.filename}", "{movie.directory}", '
                    f'"{movie.imdb_data["title"]}", "{movie.imdb_data["year"]}", "{movie.imdb_data["rating"]}", '
                    f'"{plot}", "{movie.imdb_data["top250"]}", "{movie.imdb_data["cover url"]}",'
-                   f'"{int(date_added)}", "{movie.imdb_data["runtimes"][0]}");')
+                   f'"{int(date_added)}", "{movie.imdb_data["duration"]}");')
         self.cursor.execute(command)
         self.cnx.commit()
         self.genres_update(movie_id=movie.imdb_id, genres=movie.imdb_data['genres'])

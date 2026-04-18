@@ -1,12 +1,13 @@
+# Deprecated version of the Movie Class
+# This version used the Cinemagoer library which stopped working in early 2026
+
 import re
-# from imdb import Cinemagoer
-from imdbinfo import search_title, get_movie, get_top250
+from imdb import Cinemagoer
 import logging
 logger = logging.getLogger(__name__)
 
 movie_suffixes = ['.mkv', '.mp4', '.avi', 'm4v']
-# imdb_detail = ['title', 'year', 'rating', 'plot', 'genres', 'cover url', 'runtimes']
-imdb_detail = ['title', 'year', 'rating', 'plot', 'genres', 'cover_url', 'duration']
+imdb_detail = ['title', 'year', 'rating', 'plot', 'genres', 'cover url', 'runtimes']
 
 
 class Movie:
@@ -22,12 +23,10 @@ class Movie:
         # If imdb_id is provided, movie detail will be pulled from that id
         # If it is not provided, this routine will search for a match based on the filename
 
-  #      imdb = Cinemagoer()
-
+        imdb = Cinemagoer()
         if imdb_id:
             self.imdb_id = imdb_id
-            # movie_detail = imdb.get_movie(self.imdb_id)
-            movie_detail = get_movie(self.imdb_id)
+            movie_detail = imdb.get_movie(self.imdb_id)
         else:
             search_name = self.filename
             year = ''
@@ -44,27 +43,25 @@ class Movie:
                 year = re.search(r'\d{4}', year).group(0)
             for x in ['_', '.']:
                 search_name = search_name.replace(x, ' ').rstrip(' ')
-            # movie = imdb.search_movie(f'{search_name} {year}')
-            search_results = search_title(f'{search_name} {year}')
+            movie = imdb.search_movie(f'{search_name} {year}')
             num = 0
             while True:
-                if num == len(search_results.titles):
+                if num == len(movie):
                     raise FileNotFoundError('No movie found with this search')
-                self.imdb_id = search_results.titles[num].imdbId
-                movie_detail = get_movie(self.imdb_id)
-                print(f"{movie_detail.title} {movie_detail.kind} {movie_detail.year}")
-                if ((movie_detail.kind in ['movie', 'tv movie', 'video movie', 'tv mini series']) and
-                        (str(movie_detail.year) == year)):
+                self.imdb_id = movie[num].movieID
+                movie_detail = imdb.get_movie(self.imdb_id)
+                print(f"{movie_detail['title']} {movie_detail['kind']} {movie_detail['year']}")
+                if ((movie_detail['kind'] in ['movie', 'tv movie', 'video movie', 'tv mini series']) and
+                        (str(movie_detail['year']) == year)):
                     break
                 else:
                     num += 1
         for x in imdb_detail:
             try:
-                self.imdb_data[x] = getattr(movie_detail, x)
+                self.imdb_data[x] = movie_detail[x]
             except KeyError:
                 self.imdb_data[x] = ''
-        top = get_top250()
         try:
-            self.imdb_data['top250'] = top[self.imdb_id]
+            self.imdb_data['top250'] = movie_detail['top 250 rank']
         except KeyError:
             self.imdb_data['top250'] = 999
