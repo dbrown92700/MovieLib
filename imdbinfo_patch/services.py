@@ -278,7 +278,10 @@ def get_top250():
     raw_json = request_json_url(url)
     top250_dict = {}
     for movie in raw_json['props']['pageProps']['pageData']['chartTitles']['edges']:
-        top250_dict[movie['node']['id']] = movie['currentRank']
+        top250_dict[movie['node']['id'].removeprefix('tt')] = {
+            'rank': movie['currentRank'],
+            'title': movie['node']['titleText']['text']
+        }
     return top250_dict
 
 

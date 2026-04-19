@@ -59,6 +59,6 @@ class Movie:
                 self.imdb_data[x] = ''
         top = get_top250()
         try:
-            self.imdb_data['top250'] = top[self.imdb_id]
+            self.imdb_data['top250'] = top[self.imdb_id]['rank']
         except KeyError:
             self.imdb_data['top250'] = 999

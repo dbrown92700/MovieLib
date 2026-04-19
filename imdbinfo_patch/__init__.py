@@ -46,6 +46,7 @@ from .exceptions import (
 )
 
 __all__ = [
+    "get_top250",
     "get_movie",
     "search_title",
     "get_name",
