@@ -38,6 +38,7 @@ from .models import (
     SeasonEpisodesList,
     PersonDetail,
     AkasData,
+    MediaGallery,
 )
 from .parsers import (
     parse_json_movie,
@@ -50,8 +51,9 @@ from .parsers import (
     parse_json_reviews,
     parse_json_filmography,
     parse_json_parental_guide,
+    parse_json_media_gallery,
 )
-from .aws import AwsSolver
+from imdbinfo_aws.aws import AwsSolver
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +74,7 @@ def _load_waf_cookies() -> Optional[Dict]:
     On first call per process the cache is populated from disk (one file read only)."""
     global _waf_cookies
     if _waf_cookies is not _UNSET:
-        return _waf_cookies          # fast path — already in memory
+        return _waf_cookies  # fast path — already in memory
     try:
         if _WAF_COOKIE_FILE.exists():
             data = json.loads(_WAF_COOKIE_FILE.read_text(encoding="utf-8"))
@@ -109,7 +111,6 @@ def _delete_waf_cookie_file() -> None:
         logger.debug("Could not delete WAF cookie cache file: %s", exc)
 
 
-
 class TitleType(Enum):
     """
     Defines the valid 'ttype' filters for title searches on IMDb.
@@ -136,6 +137,7 @@ title_type_search_type = {
 
 TitleFilter = Union[TitleType, Tuple[TitleType, ...]]
 
+
 def normalize_imdb_id(imdb_id: str, locale: Optional[str] = None):
     imdb_id = str(imdb_id)
     num = int(re.sub(r"\D", "", imdb_id))
@@ -144,12 +146,18 @@ def normalize_imdb_id(imdb_id: str, locale: Optional[str] = None):
     return imdb_id, lang
 
 
-def get_cookies(text , user_agent, force = False):
-    solver = AwsSolver(user_agent=user_agent , domain = "www.imdb.com")
-    token = solver.solve(text)
-    return {
-        'aws-waf-token': token,
-    }
+def get_cookies(text, user_agent, force=False):
+    logger.debug("Starting WAF challenge solver...")
+    try:
+        solver = AwsSolver(user_agent=user_agent, domain="www.imdb.com")
+        token = solver.solve(text)
+        logger.debug("WAF token successfully obtained")
+        return {
+            "aws-waf-token": token,
+        }
+    except Exception as e:
+        logger.error("WAF challenge resolution failed: %s", e, exc_info=True)
+        raise
 
 
 def request_json_url(url: str) -> Any:
@@ -183,22 +191,23 @@ def request_json_url(url: str) -> Any:
     raw_json = json.loads(str(script[0]))
     return raw_json
 
+
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
 HEADERS = {
-            "connection": "keep-alive",
-            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-            'cache-control': 'no-cache',
-            'pragma': 'no-cache',
-            'priority': 'u=0, i',
-            'sec-ch-ua': '"Not(A:Brand";v="8", "Chromium";v="144", "Google Chrome";v="144"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"macOS"',
-            'sec-fetch-dest': 'document',
-            'sec-fetch-mode': 'navigate',
-            'sec-fetch-site': 'same-origin',
-            'upgrade-insecure-requests': '1',
-            'user-agent': f'{USER_AGENT}',
-        }
+    "connection": "keep-alive",
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "cache-control": "no-cache",
+    "pragma": "no-cache",
+    "priority": "u=0, i",
+    "sec-ch-ua": '"Not(A:Brand";v="8", "Chromium";v="144", "Google Chrome";v="144"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"macOS"',
+    "sec-fetch-dest": "document",
+    "sec-fetch-mode": "navigate",
+    "sec-fetch-site": "same-origin",
+    "upgrade-insecure-requests": "1",
+    "user-agent": f"{USER_AGENT}",
+}
 
 
 def request_handler(url: str) -> Any:
@@ -272,6 +281,7 @@ def get_movie(imdb_id: str, locale: Optional[str] = None) -> Optional[MovieDetai
     return movie
 
 
+#Added get_top250 function to services - David Brown
 @lru_cache(maxsize=128)
 def get_top250():
     url = 'https://www.imdb.com/chart/top/'
@@ -288,6 +298,8 @@ def get_top250():
 @lru_cache(maxsize=128)
 def search_title(
     search_term: str,
+    year: int | None = None,
+    exact_match: bool = False,
     locale: Optional[str] = None,
     title_type: Optional[TitleFilter] = None,
 ) -> Optional[SearchResult]:
@@ -304,16 +316,29 @@ def search_title(
         ]
         search_options_types = ",".join(filter(None, types))
 
-    url = GRAPHQL_URL
+    year_filter = (
+        f"""
+        releaseDateRange: {{
+          start: "{year}-01-01"
+          end: "{year}-12-31"
+        }}
+        """
+        if year is not None
+        else ""
+    )
 
-    query_template = """query {
+    query_template = """
+query {
   mainSearch(
     first: 50
     options: {
       searchTerm: "__SEARCH_TERM__"
-      isExactMatch: false
+      isExactMatch: __EXACT_MATCH__
       type: [TITLE, NAME]
-      titleSearchOptions: { type: [__TYPES__] }
+      titleSearchOptions: {
+        type: [__TYPES__]
+        __YEAR_FILTER__
+      }
     }
   ) {
     edges {
@@ -360,14 +385,22 @@ def search_title(
   }
 }"""
 
-    query = (query_template.replace("__SEARCH_TERM__", search_term)
-            .replace( "__TYPES__", search_options_types))
+    query = (
+        query_template
+        .replace("__SEARCH_TERM__", search_term)
+        .replace("__EXACT_MATCH__", str(exact_match).lower())
+        .replace("__TYPES__", search_options_types)
+        .replace("__YEAR_FILTER__", year_filter)
+    )
     payload = {"query": query}
     headers = {"Content-Type": "application/json", "x-imdb-user-country": country_code}
 
     logger.info("Searching for '%s' using GraphQL API", search_term)
     data = request_graphql_url(
-        headers=headers, search_term=search_term, payload=payload, url=url
+        headers=headers,
+        search_term=search_term,
+        payload=payload,
+        url=GRAPHQL_URL,
     )
     result = parse_json_search(data)
 
@@ -503,7 +536,7 @@ def get_parental_guide(imdb_id: str, locale: Optional[str] = None) -> Dict:
     return parental_guide
 
 
-def get_filmography(imdb_id,locale: Optional[str] = None) -> dict:
+def get_filmography(imdb_id, locale: Optional[str] = None) -> dict:
     """
     Fetch full filmography for a person using the provided IMDb ID.
     """
@@ -540,6 +573,48 @@ def _get_extended_title_info(imdb_id, locale=None) -> dict:
             }
             originalTitle: originalTitleText {
               text
+            }
+            images(first: 50) {
+              total
+              pageInfo {
+                endCursor
+                hasNextPage
+                hasPreviousPage
+                startCursor
+              }
+              edges {
+                position
+                cursor
+                node {
+                  id
+                  url
+                  height
+                  width
+                  caption {
+                    plainText
+                  }
+                  type
+                  copyright
+                  createdBy
+                  source {
+                    id
+                    text
+                    attributionUrl
+                  }
+                  names {
+                    id
+                    nameText {
+                      text
+                    }
+                  }
+                  titles {
+                    id
+                    titleText {
+                      text
+                    }
+                  }
+                }
+              }
             }
             interests(first: 20) {
               edges {
@@ -642,7 +717,7 @@ def _get_extended_title_info(imdb_id, locale=None) -> dict:
     return raw_json
 
 
-def _get_extended_name_info(person_id,  locale=None) -> dict:
+def _get_extended_name_info(person_id, locale=None) -> dict:
     """
     Fetch extended person info using IMDb's GraphQL API.
     """
@@ -751,10 +826,25 @@ def _get_extended_name_info(person_id,  locale=None) -> dict:
     url = GRAPHQL_URL
     headers = {
         "Content-Type": "application/json",
-            "x-imdb-user-country": country,
+        "x-imdb-user-country": country,
     }
     payload = {"query": query}
     logger.info("Fetching person %s from GraphQL API", person_id)
     data = request_graphql_url(headers, person_id, payload, url)
     raw_json = data.get("data", {}).get("name", {})
     return raw_json
+
+
+@lru_cache(maxsize=128)
+def get_media_gallery(
+    imdb_id: str,
+    locale: Optional[str] = None,
+) -> Optional[MediaGallery]:
+    imdb_id, lang = normalize_imdb_id(imdb_id, locale)
+    raw_json = _get_extended_title_info(imdb_id, lang)
+    if not raw_json:
+        logger.warning("No media_gallery found for title %s", imdb_id)
+        return []
+    media_gallery = parse_json_media_gallery(raw_json)
+    logger.debug("Fetched %d media_gallery for title %s", len(media_gallery or[]), imdb_id)
+    return media_gallery

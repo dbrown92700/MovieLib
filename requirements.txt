@@ -1,7 +1,7 @@
 mysql-connector-python>=8.3.0
 # cinemagoer>=2023.5.1
 # Deprecated
-imdbinfo
+imdbinfo==0.9.9
 requests>=2.27.1
 Flask>=3.0.3
 MarkupSafe>=2.1.5
